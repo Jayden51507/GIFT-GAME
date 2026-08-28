@@ -1,315 +1,2262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=800, initial-scale=0.45">
-<title>Kingdom Territory Overlay</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CRYPT RAID</title>
+
 <style>
-  html, body {
-    margin: 0; padding: 0;
-    width: 800px; height: 600px;
-    background: transparent;
-    overflow: hidden;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    color: #fff;
-  }
-  #stage { position: relative; width: 800px; height: 600px; }
+* {
+  box-sizing: border-box;
+}
 
-  canvas#map {
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse at 50% 0%, rgba(255,244,214,0.12), transparent 60%),
-      linear-gradient(180deg, #2b1d3d 0%, #1c1230 55%, #120c22 100%);
-    border-radius: 12px;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #020307;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#game {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 72% 42%, rgba(0,255,255,.12), transparent 28%),
+    radial-gradient(circle at 62% 55%, rgba(150,0,255,.16), transparent 35%),
+    linear-gradient(180deg,#010207,#050712 55%,#010207);
+}
+
+/* DIGITAL BACKGROUND */
+
+#game::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .22;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 39px,
+      rgba(0,255,180,.08) 40px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 39px,
+      rgba(80,150,255,.05) 40px
+    );
+  pointer-events: none;
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(255,255,255,.018) 4px
+  );
+}
+
+/* HEADER */
+
+.header {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  text-align: center;
+  pointer-events: none;
+}
+
+.logo {
+  font-size: 27px;
+  font-weight: 1000;
+  letter-spacing: 5px;
+  color: #fff;
+  text-shadow:
+    0 0 8px #00ffff,
+    0 0 20px #8a2cff,
+    0 0 40px #00ffff;
+}
+
+.subtitle {
+  margin-top: 3px;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: #65ffff;
+  opacity: .8;
+}
+
+/* BOSS */
+
+.boss-area {
+  position: absolute;
+  top: 82px;
+  left: 50%;
+  width: min(620px, 75vw);
+  height: 390px;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.boss-name {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #bff;
+  text-shadow:
+    0 0 8px #00ffff,
+    0 0 20px #8a2cff;
+}
+
+.hp-shell {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  margin-top: 8px;
+  border: 1px solid rgba(0,255,255,.75);
+  border-radius: 20px;
+  padding: 3px;
+  background: rgba(0,0,0,.7);
+  box-shadow:
+    0 0 10px rgba(0,255,255,.35),
+    inset 0 0 15px rgba(140,0,255,.25);
+}
+
+#hp {
+  height: 100%;
+  width: 100%;
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      90deg,
+      #00ffff,
+      #287cff,
+      #9b21ff,
+      #ff19d9
+    );
+  box-shadow:
+    0 0 8px #00ffff,
+    0 0 18px #8b20ff;
+  transition: width .25s ease;
+}
+
+.hp-text {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 10px;
+  color: rgba(255,255,255,.7);
+}
+
+/* CANVAS */
+
+#battle {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+/* TOP FIVE */
+
+.party {
+  position: absolute;
+  top: 105px;
+  left: 18px;
+  width: 170px;
+  z-index: 15;
+}
+
+.party-title {
+  color: #65ffff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 7px;
+  text-shadow: 0 0 8px #00ffff;
+}
+
+.hero-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+  padding: 5px 7px;
+  border: 1px solid rgba(0,255,255,.25);
+  border-radius: 8px;
+  background: rgba(3,8,18,.72);
+  box-shadow:
+    0 0 12px rgba(0,255,255,.08);
+  overflow: hidden;
+}
+
+.hero-card.active {
+  border-color: rgba(0,255,255,.7);
+  box-shadow:
+    0 0 10px rgba(0,255,255,.25),
+    inset 0 0 15px rgba(130,0,255,.12);
+}
+
+.rank {
+  width: 15px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #a6ffff;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg,#00ffff,#7b19ff);
+  border: 1px solid rgba(255,255,255,.8);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.hero-name {
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-power {
+  font-size: 8px;
+  color: #7affff;
+  margin-top: 2px;
+}
+
+/* LIKER CROWD */
+
+.crowd {
+  position: absolute;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%);
+  width: min(700px,90vw);
+  height: 100px;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  overflow: hidden;
+  padding: 5px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 25%
+  );
+}
+
+.crowd-avatar {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    #00ffff,
+    #8d21ff
+  );
+  border: 1px solid rgba(255,255,255,.55);
+  font-size: 9px;
+  font-weight: 900;
+  box-shadow:
+    0 0 8px rgba(0,255,255,.3);
+  animation:
+    crowdIn .35s ease-out,
+    floaty 2s ease-in-out infinite alternate;
+}
+
+.crowd-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+@keyframes crowdIn {
+  from {
+    transform: translateY(20px) scale(.3);
+    opacity: 0;
   }
 
-  #title {
-    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-    font-size: 20px; font-weight: 800; letter-spacing: 1px;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes floaty {
+  from {
+    transform: translateY(0);
   }
 
-  /* --- Leaderboard --- */
-  #leaderboard {
-    position: absolute; top: 46px; left: 12px;
-    width: 178px;
-    background: rgba(20,12,32,0.72);
-    border: 2px solid rgba(255,215,120,0.55);
-    border-radius: 10px;
-    padding: 8px 10px;
-    font-size: 12px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+  to {
+    transform: translateY(-3px);
   }
-  #leaderboard h3 {
-    margin: 2px 0 6px; font-size: 12px; letter-spacing: .5px;
-    color: #ffd77a; text-transform: uppercase;
-  }
-  .lb-row {
-    display: flex; align-items: center; gap: 6px;
-    padding: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .lb-rank { width: 14px; color: #ffd77a; font-weight: 700; }
-  .lb-name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-  .lb-val { color: #ffe3a3; font-weight: 700; }
-  .lb-sep { margin: 6px 0; border-top: 1px solid rgba(255,255,255,0.15); }
+}
 
-  /* --- Gift popup --- */
-  #popupLayer {
-    position: absolute; top: 46px; right: 12px; width: 220px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .gift-card {
-    background: linear-gradient(135deg, rgba(255,215,120,0.95), rgba(255,175,70,0.95));
-    color: #3a2200;
-    border-radius: 12px;
-    padding: 8px 10px;
-    display: flex; align-items: center; gap: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-    animation: cardIn 0.35s ease-out, cardOut 0.4s ease-in 3.6s forwards;
-  }
-  .gift-avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: #5a3b16; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 14px; flex-shrink: 0;
-    border: 2px solid rgba(255,255,255,0.8);
-    overflow: hidden;
-  }
-  .gift-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .gift-text { font-size: 12px; line-height: 1.25; font-weight: 600; }
-  .gift-text b { font-size: 13px; }
-  @keyframes cardIn {
-    from { opacity: 0; transform: translateX(30px) scale(0.9); }
-    to   { opacity: 1; transform: translateX(0) scale(1); }
-  }
-  @keyframes cardOut {
-    to { opacity: 0; transform: translateX(30px) scale(0.9); }
+.crowd-label {
+  position: absolute;
+  bottom: 55px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(150,255,255,.7);
+}
+
+/* EVENTS */
+
+#events {
+  position: absolute;
+  top: 105px;
+  right: 15px;
+  width: 205px;
+  z-index: 20;
+}
+
+.event {
+  margin-bottom: 7px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,255,255,.35);
+  background: rgba(3,7,17,.82);
+  box-shadow:
+    0 0 14px rgba(0,255,255,.12);
+  animation: eventIn .3s ease-out;
+  font-size: 10px;
+}
+
+.event.gift {
+  border-color: rgba(255,0,220,.65);
+  box-shadow:
+    0 0 15px rgba(255,0,220,.2);
+}
+
+.event b {
+  color: #fff;
+}
+
+.event small {
+  display: block;
+  margin-top: 3px;
+  color: #7affff;
+}
+
+@keyframes eventIn {
+  from {
+    transform: translateX(25px);
+    opacity: 0;
   }
 
-  #testBtns {
-    position: absolute; bottom: 10px; right: 12px;
-    display: flex; gap: 6px;
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
-  #testBtns button {
-    padding: 6px 10px; font-size: 11px;
-    background: rgba(255,255,255,0.15); color: #fff;
-    border: 1px solid rgba(255,255,255,0.4); border-radius: 8px;
+}
+
+/* DAMAGE */
+
+.damage {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  font-weight: 1000;
+  font-size: 25px;
+  color: #fff;
+  text-shadow:
+    0 0 7px #00ffff,
+    0 0 18px #a020ff;
+  animation: damageFloat 1s ease-out forwards;
+}
+
+@keyframes damageFloat {
+  from {
+    opacity: 1;
+    transform: translate(-50%,0) scale(.7);
   }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%,-75px) scale(1.35);
+  }
+}
+
+/* PHASE */
+
+#phase {
+  position: absolute;
+  left: 50%;
+  top: 260px;
+  transform: translate(-50%,-50%);
+  z-index: 40;
+  pointer-events: none;
+  font-size: 25px;
+  font-weight: 1000;
+  letter-spacing: 5px;
+  color: white;
+  text-shadow:
+    0 0 10px #00ffff,
+    0 0 30px #9d20ff;
+  opacity: 0;
+}
+
+#phase.show {
+  animation: phaseFlash 1.4s ease-out;
+}
+
+@keyframes phaseFlash {
+  0% {
+    opacity: 0;
+    transform: translate(-50%,-50%) scale(.5);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translate(-50%,-50%) scale(1.1);
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%,-50%) scale(1.2);
+  }
+}
+
+/* VICTORY */
+
+#victory {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background:
+    radial-gradient(
+      circle,
+      rgba(0,255,255,.25),
+      rgba(80,0,180,.2),
+      rgba(0,0,0,.85)
+    );
+  text-align: center;
+}
+
+#victory.show {
+  display: flex;
+  animation: victoryIn .5s ease-out;
+}
+
+.victory-title {
+  font-size: 46px;
+  font-weight: 1000;
+  letter-spacing: 5px;
+  color: white;
+  text-shadow:
+    0 0 12px #00ffff,
+    0 0 35px #8a1cff,
+    0 0 70px #00ffff;
+}
+
+.victory-sub {
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: #8fffff;
+}
+
+@keyframes victoryIn {
+  from {
+    opacity: 0;
+    transform: scale(.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* TEST PANEL */
+
+#testPanel {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 200;
+  width: 260px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 9px;
+  border: 1px solid rgba(0,255,255,.35);
+  border-radius: 10px;
+  background: rgba(1,5,12,.92);
+  box-shadow:
+    0 0 20px rgba(0,255,255,.12);
+}
+
+.test-title {
+  color: #65ffff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 7px;
+}
+
+.test-row {
+  display: grid;
+  grid-template-columns: 1fr 38px 48px 55px;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.test-name {
+  font-size: 9px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.test-row button,
+#reset {
+  border: 1px solid rgba(0,255,255,.4);
+  border-radius: 5px;
+  background: rgba(0,255,255,.08);
+  color: white;
+  font-size: 8px;
+  padding: 5px 3px;
+}
+
+.test-row button:hover,
+#reset:hover {
+  background: rgba(0,255,255,.25);
+}
+
+.gift-button {
+  border-color: rgba(255,0,220,.5) !important;
+  color: #ffb4f4 !important;
+}
+
+#reset {
+  width: 100%;
+  margin-top: 5px;
+}
+
+/* MOBILE */
+
+@media(max-width:700px) {
+  .party {
+    left: 7px;
+    width: 130px;
+    top: 85px;
+  }
+
+  .hero-card {
+    padding: 3px;
+  }
+
+  .avatar {
+    width: 25px;
+    height: 25px;
+    flex-basis: 25px;
+  }
+
+  #events {
+    right: 7px;
+    width: 155px;
+    top: 85px;
+  }
+
+  .boss-area {
+    width: 80vw;
+    top: 75px;
+  }
+
+  #testPanel {
+    width: 230px;
+    transform: scale(.85);
+    transform-origin: bottom left;
+  }
+}
 </style>
 </head>
-<body>
-  <div id="stage">
-    <canvas id="map" width="800" height="600"></canvas>
-    <div id="title">🏰 KINGDOM TERRITORIES</div>
 
-    <div id="leaderboard">
-      <h3>👑 Top Gifters</h3>
-      <div id="lbGifters"></div>
-      <div class="lb-sep"></div>
-      <h3>❤️ Top Likers</h3>
-      <div id="lbLikers"></div>
+<body>
+
+<div id="game">
+
+  <div class="scanlines"></div>
+
+  <div class="header">
+    <div class="logo">⚡ CRYPT RAID ⚡</div>
+    <div class="subtitle">THE CREATURE MUST FALL</div>
+  </div>
+
+  <div class="boss-area">
+    <div class="boss-name">👹 CRYPT CREATURE</div>
+
+    <div class="hp-shell">
+      <div id="hp"></div>
     </div>
 
-    <div id="popupLayer"></div>
-
-    <div id="testBtns">
-      <button id="testLike">Test Like</button>
-      <button id="testGift">Test Gift</button>
+    <div class="hp-text">
+      <span id="hpText">100,000 / 100,000</span>
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    const canvas = document.getElementById('map');
-    const ctx = canvas.getContext('2d');
+  <canvas id="battle"></canvas>
 
-    // Latest server snapshot; we interpolate toward it each frame for smoothness.
-    let targetBlobs = [];      // from server: {uniqueId, nickname, avatarUrl, color, x, y, radius, recentlyGifted}
-    let renderBlobs = new Map(); // uniqueId -> {x,y,radius,...} current animated values
-    const avatarImgCache = new Map(); // uniqueId -> HTMLImageElement (or null if failed)
+  <div class="party">
+    <div class="party-title">⚔ TOP 5 RAIDERS</div>
+    <div id="heroes"></div>
+  </div>
 
-    function getAvatarImg(uniqueId, url) {
-      if (!url) return null;
-      if (avatarImgCache.has(uniqueId)) return avatarImgCache.get(uniqueId);
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = url;
-      let ok = true;
-      img.onerror = () => { ok = false; };
-      avatarImgCache.set(uniqueId, img);
-      return img;
-    }
+  <div id="events"></div>
 
-    function lerp(a, b, t) { return a + (b - a) * t; }
+  <div class="crowd" id="crowd"></div>
+  <div class="crowd-label">❤️ THE CRYPT ARMY</div>
 
-    socket.on('map', (snapshot) => { targetBlobs = snapshot; });
+  <div id="phase"></div>
 
-    function drawBackgroundTexture() {
-      // Soft parchment/kingdom-map grid dots
-      ctx.save();
-      ctx.globalAlpha = 0.08;
-      ctx.fillStyle = '#ffffff';
-      for (let x = 20; x < 800; x += 40) {
-        for (let y = 20; y < 600; y += 40) {
-          ctx.beginPath();
-          ctx.arc(x, y, 1.2, 0, Math.PI * 2);
-          ctx.fill();
+  <div id="victory">
+    <div class="victory-title">CRYPT DESTROYED</div>
+    <div class="victory-sub">
+      THE RAIDERS HAVE WON
+    </div>
+  </div>
+
+  <!-- =============================================
+       TEST PANEL
+       ============================================= -->
+
+  <div id="testPanel">
+
+    <div class="test-title">
+      🧪 MULTI-PLAYER TEST LAB
+    </div>
+
+    <div id="testPlayers"></div>
+
+    <button id="reset">
+      RESET RAID
+    </button>
+
+  </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io();
+
+const canvas =
+  document.getElementById("battle");
+
+const ctx =
+  canvas.getContext("2d");
+
+let W = 800;
+let H = 600;
+
+let state = {
+  boss: {
+    hp: 100000,
+    maxHp: 100000,
+    phase: 1
+  },
+  heroes: [],
+  likers: []
+};
+
+let particles = [];
+let attacks = [];
+let bossPulse = 0;
+let shake = 0;
+
+const TEST_PLAYERS = [
+  {
+    id: "test_jayden",
+    nickname: "Jayden"
+  },
+  {
+    id: "test_sarah",
+    nickname: "Sarah"
+  },
+  {
+    id: "test_mike",
+    nickname: "Mike"
+  },
+  {
+    id: "test_alex",
+    nickname: "Alex"
+  },
+  {
+    id: "test_josh",
+    nickname: "Josh"
+  },
+  {
+    id: "test_emma",
+    nickname: "Emma"
+  },
+  {
+    id: "test_daniel",
+    nickname: "Daniel"
+  }
+];
+
+function resize() {
+  W = canvas.width =
+    window.innerWidth;
+
+  H = canvas.height =
+    window.innerHeight;
+}
+
+window.addEventListener(
+  "resize",
+  resize
+);
+
+resize();
+
+/* =============================================
+   HELPERS
+============================================= */
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[char]));
+}
+
+function avatarHTML(player, className) {
+  if (player.avatarUrl) {
+    return `
+      <div class="${className}">
+        <img
+          src="${escapeHtml(player.avatarUrl)}"
+          onerror="this.style.display='none'"
+        >
+      </div>
+    `;
+  }
+
+  return `
+    <div class="${className}">
+      ${escapeHtml(
+        (player.nickname || "?")
+          .charAt(0)
+          .toUpperCase()
+      )}
+    </div>
+  `;
+}
+
+/* =============================================
+   TEST PANEL
+============================================= */
+
+function buildTestPanel() {
+
+  const container =
+    document.getElementById(
+      "testPlayers"
+    );
+
+  container.innerHTML = "";
+
+  TEST_PLAYERS.forEach(player => {
+
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "test-row";
+
+    row.innerHTML = `
+      <div class="test-name">
+        ${escapeHtml(
+          player.nickname
+        )}
+      </div>
+
+      <button
+        data-like="${player.id}"
+      >
+        ❤️
+      </button>
+
+      <button
+        class="gift-button"
+        data-rose="${player.id}"
+      >
+        🌹
+      </button>
+
+      <button
+        class="gift-button"
+        data-galaxy="${player.id}"
+      >
+        🌌 1K
+      </button>
+    `;
+
+    container.appendChild(row);
+  });
+
+  container
+    .querySelectorAll("[data-like]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          socket.emit(
+            "manual-test-like",
+            {
+              playerId:
+                button.dataset.like,
+              amount: 1
+            }
+          );
+
         }
-      }
-      ctx.restore();
-    }
+      );
 
-    function drawBlob(b) {
-      const { x, y, radius, color, nickname, recentlyGifted, avatarUrl, uniqueId } = b;
-
-      // Glow ring if recently gifted
-      if (recentlyGifted) {
-        ctx.save();
-        ctx.shadowColor = '#ffd77a';
-        ctx.shadowBlur = 26;
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
-        ctx.strokeStyle = '#ffd77a';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // Territory circle
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      const grad = ctx.createRadialGradient(x - radius * 0.3, y - radius * 0.3, radius * 0.1, x, y, radius);
-      grad.addColorStop(0, shade(color, 30));
-      grad.addColorStop(1, color);
-      ctx.fillStyle = grad;
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-      ctx.stroke();
-      ctx.restore();
-
-      // Avatar (clipped circle) or initials
-      const avSize = Math.min(radius * 1.1, 46);
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, avSize / 2, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.clip();
-      const img = getAvatarImg(uniqueId, avatarUrl);
-      if (img && img.complete && img.naturalWidth > 0) {
-        ctx.drawImage(img, x - avSize / 2, y - avSize / 2, avSize, avSize);
-      } else {
-        ctx.fillStyle = 'rgba(0,0,0,0.35)';
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.font = `bold ${Math.max(12, avSize * 0.42)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText((nickname || '?').slice(0, 1).toUpperCase(), x, y);
-      }
-      ctx.restore();
-
-      // Nickname label
-      ctx.save();
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillText(nickname, x + 1, y + radius + 15);
-      ctx.fillStyle = '#fff';
-      ctx.fillText(nickname, x, y + radius + 14);
-      ctx.restore();
-    }
-
-    function shade(hex, percent) {
-      const num = parseInt(hex.slice(1), 16);
-      let r = (num >> 16) + percent;
-      let g = ((num >> 8) & 0x00ff) + percent;
-      let b = (num & 0x0000ff) + percent;
-      r = Math.min(255, Math.max(0, r));
-      g = Math.min(255, Math.max(0, g));
-      b = Math.min(255, Math.max(0, b));
-      return `rgb(${r},${g},${b})`;
-    }
-
-    function tick() {
-      // Merge/interpolate render state toward target
-      const targetIds = new Set(targetBlobs.map(b => b.uniqueId));
-      for (const id of [...renderBlobs.keys()]) {
-        if (!targetIds.has(id)) {
-          // shrink out anything no longer in the snapshot (fully despawned)
-          const r = renderBlobs.get(id);
-          r.radius = lerp(r.radius, 0, 0.25);
-          if (r.radius < 1) renderBlobs.delete(id);
-        }
-      }
-      for (const t of targetBlobs) {
-        const cur = renderBlobs.get(t.uniqueId) || { ...t };
-        cur.x = lerp(cur.x, t.x, 0.15);
-        cur.y = lerp(cur.y, t.y, 0.15);
-        cur.radius = lerp(cur.radius, t.radius, 0.18);
-        cur.color = t.color;
-        cur.nickname = t.nickname;
-        cur.avatarUrl = t.avatarUrl;
-        cur.recentlyGifted = t.recentlyGifted;
-        cur.uniqueId = t.uniqueId;
-        renderBlobs.set(t.uniqueId, cur);
-      }
-
-      ctx.clearRect(0, 0, 800, 600);
-      drawBackgroundTexture();
-      // biggest in back, smallest in front looks nicer for overlaps
-      const sorted = [...renderBlobs.values()].sort((a, b) => b.radius - a.radius);
-      for (const b of sorted) drawBlob(b);
-
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-
-    // --- Leaderboard ---
-    function renderLeaderboard(list, targetEl, valueKey, suffix) {
-      targetEl.innerHTML = '';
-      if (!list.length) {
-        targetEl.innerHTML = '<div class="lb-row" style="opacity:.6">— none yet —</div>';
-        return;
-      }
-      list.forEach((entry, i) => {
-        const row = document.createElement('div');
-        row.className = 'lb-row';
-        row.innerHTML = `<span class="lb-rank">${i + 1}.</span><span class="lb-name">${escapeHtml(entry.nickname)}</span><span class="lb-val">${entry[valueKey]}${suffix}</span>`;
-        targetEl.appendChild(row);
-      });
-    }
-    function escapeHtml(s) {
-      return (s || '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    socket.on('leaderboard', ({ topGifters, topLikers }) => {
-      renderLeaderboard(topGifters, document.getElementById('lbGifters'), 'diamonds', '💎');
-      renderLeaderboard(topLikers, document.getElementById('lbLikers'), 'likes', '❤️');
     });
 
-    // --- Gift popup cards ---
-    socket.on('gift-popup', (evt) => {
-      const layer = document.getElementById('popupLayer');
-      const card = document.createElement('div');
-      card.className = 'gift-card';
-      const avatarInner = evt.avatarUrl
-        ? `<img src="${evt.avatarUrl}" onerror="this.parentElement.textContent='${(evt.nickname || '?').slice(0,1).toUpperCase()}'">`
-        : (evt.nickname || '?').slice(0, 1).toUpperCase();
-      const countTxt = evt.repeatCount > 1 ? ` x${evt.repeatCount}` : '';
-      card.innerHTML = `
-        <div class="gift-avatar">${avatarInner}</div>
-        <div class="gift-text"><b>${escapeHtml(evt.nickname)}</b><br>sent ${escapeHtml(evt.giftName)}${countTxt} 💎${evt.value}</div>
+  container
+    .querySelectorAll("[data-rose]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          socket.emit(
+            "manual-test-gift",
+            {
+              playerId:
+                button.dataset.rose,
+
+              giftName:
+                "Rose",
+
+              diamonds: 1
+            }
+          );
+
+        }
+      );
+
+    });
+
+  container
+    .querySelectorAll("[data-galaxy]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          socket.emit(
+            "manual-test-gift",
+            {
+              playerId:
+                button.dataset.galaxy,
+
+              giftName:
+                "Galaxy",
+
+              diamonds: 1000
+            }
+          );
+
+        }
+      );
+
+    });
+
+}
+
+buildTestPanel();
+
+document
+  .getElementById("reset")
+  .addEventListener(
+    "click",
+    () => {
+
+      socket.emit(
+        "manual-test-reset"
+      );
+
+    }
+  );
+
+/* =============================================
+   SOCKET STATE
+============================================= */
+
+socket.on(
+  "raid-state",
+  newState => {
+
+    state = newState;
+
+    renderHeroes();
+    renderCrowd();
+    updateHP();
+
+  }
+);
+
+/* =============================================
+   HEROES
+============================================= */
+
+function renderHeroes() {
+
+  const container =
+    document.getElementById(
+      "heroes"
+    );
+
+  container.innerHTML = "";
+
+  const heroes =
+    state.heroes || [];
+
+  for (let i = 0; i < 5; i++) {
+
+    const hero =
+      heroes[i];
+
+    if (!hero) {
+
+      container.innerHTML += `
+        <div class="hero-card">
+          <div class="rank">
+            ${i + 1}
+          </div>
+
+          <div class="avatar">
+            ?
+          </div>
+
+          <div class="hero-info">
+            <div class="hero-name">
+              OPEN SLOT
+            </div>
+
+            <div class="hero-power">
+              Gift to enter
+            </div>
+          </div>
+        </div>
       `;
-      layer.appendChild(card);
-      setTimeout(() => card.remove(), 4200);
+
+      continue;
+    }
+
+    container.innerHTML += `
+      <div class="hero-card active">
+
+        <div class="rank">
+          ${hero.rank}
+        </div>
+
+        ${avatarHTML(
+          hero,
+          "avatar"
+        )}
+
+        <div class="hero-info">
+
+          <div class="hero-name">
+            ${escapeHtml(
+              hero.nickname
+            )}
+          </div>
+
+          <div class="hero-power">
+            ⚡ ${hero.diamonds.toLocaleString()}
+          </div>
+
+        </div>
+
+      </div>
+    `;
+  }
+}
+
+/* =============================================
+   CROWD
+============================================= */
+
+function renderCrowd() {
+
+  const container =
+    document.getElementById(
+      "crowd"
+    );
+
+  const likers =
+    state.likers || [];
+
+  container.innerHTML = "";
+
+  likers
+    .slice(0, 80)
+    .forEach(liker => {
+
+      container.innerHTML +=
+        avatarHTML(
+          liker,
+          "crowd-avatar"
+        );
+
+    });
+}
+
+/* =============================================
+   HP
+============================================= */
+
+function updateHP() {
+
+  const boss =
+    state.boss;
+
+  if (!boss) {
+    return;
+  }
+
+  const percent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        boss.percent ??
+        (boss.hp /
+          boss.maxHp) *
+          100
+      )
+    );
+
+  document
+    .getElementById("hp")
+    .style.width =
+      percent + "%";
+
+  document
+    .getElementById("hpText")
+    .textContent =
+      `${Math.ceil(
+        boss.hp
+      ).toLocaleString()} / ${boss.maxHp.toLocaleString()}`;
+
+}
+
+/* =============================================
+   GIFT EVENTS
+============================================= */
+
+socket.on(
+  "gift-event",
+  event => {
+
+    addEvent(
+      event,
+      true
+    );
+
+    spawnGiftBurst(
+      event
+    );
+
+  }
+);
+
+/* =============================================
+   LIKE EVENTS
+============================================= */
+
+socket.on(
+  "like-event",
+  event => {
+
+    addEvent(
+      event,
+      false
+    );
+
+    spawnLikeBurst();
+
+  }
+);
+
+/* =============================================
+   HERO ATTACK
+============================================= */
+
+socket.on(
+  "hero-attack",
+  event => {
+
+    attacks.push({
+      hero: event,
+      life: 1,
+      x: Math.random() *
+        W,
+      y: H * .48
     });
 
-    // --- Manual test buttons ---
-    document.getElementById('testLike').addEventListener('click', () => socket.emit('manual-test-like'));
-    document.getElementById('testGift').addEventListener('click', () => socket.emit('manual-test-gift'));
-  </script>
+    bossPulse =
+      Math.min(
+        1,
+        bossPulse + .12
+      );
+
+  }
+);
+
+/* =============================================
+   BOSS HIT
+============================================= */
+
+socket.on(
+  "boss-hit",
+  event => {
+
+    shake =
+      Math.min(
+        12,
+        shake + 2
+      );
+
+    showDamage(
+      event.damage
+    );
+
+  }
+);
+
+/* =============================================
+   PHASE
+============================================= */
+
+socket.on(
+  "boss-phase",
+  event => {
+
+    const phase =
+      document.getElementById(
+        "phase"
+      );
+
+    phase.textContent =
+      `PHASE ${event.phase}`;
+
+    phase.classList.remove(
+      "show"
+    );
+
+    void phase.offsetWidth;
+
+    phase.classList.add(
+      "show"
+    );
+
+  }
+);
+
+/* =============================================
+   VICTORY
+============================================= */
+
+socket.on(
+  "boss-defeated",
+  () => {
+
+    document
+      .getElementById(
+        "victory"
+      )
+      .classList.add(
+        "show"
+      );
+
+  }
+);
+
+socket.on(
+  "new-round",
+  () => {
+
+    document
+      .getElementById(
+        "victory"
+      )
+      .classList.remove(
+        "show"
+      );
+
+    state.boss.hp =
+      state.boss.maxHp;
+
+    updateHP();
+
+  }
+);
+
+socket.on(
+  "raid-reset",
+  () => {
+
+    document
+      .getElementById(
+        "victory"
+      )
+      .classList.remove(
+        "show"
+      );
+
+  }
+);
+
+/* =============================================
+   EVENTS
+============================================= */
+
+function addEvent(
+  event,
+  isGift
+) {
+
+  const container =
+    document.getElementById(
+      "events"
+    );
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    "event" +
+    (isGift
+      ? " gift"
+      : "");
+
+  if (isGift) {
+
+    div.innerHTML = `
+      🎁 <b>
+        ${escapeHtml(
+          event.nickname
+        )}
+      </b>
+
+      <small>
+        ${escapeHtml(
+          event.giftName
+        )}
+        +${event.value}
+        💎
+      </small>
+    `;
+
+  } else {
+
+    div.innerHTML = `
+      ❤️ <b>
+        ${escapeHtml(
+          event.nickname
+        )}
+      </b>
+
+      <small>
+        joined the CRYPT Army
+      </small>
+    `;
+
+  }
+
+  container.prepend(
+    div
+  );
+
+  setTimeout(
+    () => div.remove(),
+    4000
+  );
+
+}
+
+/* =============================================
+   DAMAGE NUMBER
+============================================= */
+
+function showDamage(
+  damage
+) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    "damage";
+
+  div.textContent =
+    "-" +
+    damage.toLocaleString();
+
+  div.style.left =
+    (55 +
+      Math.random() * 20) +
+    "%";
+
+  div.style.top =
+    (35 +
+      Math.random() * 25) +
+    "%";
+
+  document
+    .getElementById(
+      "game"
+    )
+    .appendChild(
+      div
+    );
+
+  setTimeout(
+    () => div.remove(),
+    1000
+  );
+
+}
+
+/* =============================================
+   PARTICLES
+============================================= */
+
+function particle(
+  x,
+  y,
+  color
+) {
+
+  particles.push({
+    x,
+    y,
+    vx:
+      (Math.random() - .5) *
+      7,
+    vy:
+      (Math.random() - .5) *
+      7,
+    life: 1,
+    color,
+    size:
+      1 +
+      Math.random() *
+      4
+  });
+
+}
+
+function spawnGiftBurst() {
+
+  for (
+    let i = 0;
+    i < 35;
+    i++
+  ) {
+
+    particle(
+      W * .65,
+      H * .45,
+      i % 2
+        ? "#00ffff"
+        : "#b020ff"
+    );
+
+  }
+
+  shake =
+    Math.min(
+      15,
+      shake + 7
+    );
+
+}
+
+function spawnLikeBurst() {
+
+  for (
+    let i = 0;
+    i < 4;
+    i++
+  ) {
+
+    particle(
+      W / 2 +
+        (Math.random() - .5) *
+        300,
+
+      H * .7,
+
+      "#00ffff"
+    );
+
+  }
+
+}
+
+/* =============================================
+   CRYPT CREATURE
+============================================= */
+
+function drawCryptCreature(
+  time
+) {
+
+  const cx =
+    W * .66;
+
+  const cy =
+    H * .40;
+
+  const phase =
+    state.boss?.phase || 1;
+
+  const pulse =
+    Math.sin(
+      time * .003
+    ) * 5;
+
+  const hit =
+    bossPulse * 18;
+
+  ctx.save();
+
+  /*
+    Glow
+  */
+
+  ctx.shadowBlur =
+    35 + hit;
+
+  ctx.shadowColor =
+    "#7b18ff";
+
+  /*
+    Body
+  */
+
+  const bodyGradient =
+    ctx.createLinearGradient(
+      cx - 100,
+      cy - 130,
+      cx + 130,
+      cy + 150
+    );
+
+  bodyGradient.addColorStop(
+    0,
+    "#07151b"
+  );
+
+  bodyGradient.addColorStop(
+    .45,
+    "#10101d"
+  );
+
+  bodyGradient.addColorStop(
+    1,
+    "#020308"
+  );
+
+  ctx.fillStyle =
+    bodyGradient;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    cx - 110,
+    cy + 110
+  );
+
+  ctx.lineTo(
+    cx - 130,
+    cy + 10
+  );
+
+  ctx.lineTo(
+    cx - 100,
+    cy - 80
+  );
+
+  ctx.lineTo(
+    cx - 50,
+    cy - 120
+  );
+
+  ctx.lineTo(
+    cx + 25,
+    cy - 130
+  );
+
+  ctx.lineTo(
+    cx + 100,
+    cy - 80
+  );
+
+  ctx.lineTo(
+    cx + 135,
+    cy + 20
+  );
+
+  ctx.lineTo(
+    cx + 105,
+    cy + 120
+  );
+
+  ctx.closePath();
+
+  ctx.fill();
+
+  /*
+    Wings
+  */
+
+  ctx.shadowBlur =
+    25;
+
+  ctx.strokeStyle =
+    "#8a19ff";
+
+  ctx.lineWidth =
+    5;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    cx - 70,
+    cy - 60
+  );
+
+  ctx.lineTo(
+    cx - 210,
+    cy - 145
+  );
+
+  ctx.lineTo(
+    cx - 160,
+    cy - 15
+  );
+
+  ctx.lineTo(
+    cx - 235,
+    cy + 45
+  );
+
+  ctx.lineTo(
+    cx - 90,
+    cy + 20
+  );
+
+  ctx.stroke();
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    cx + 65,
+    cy - 60
+  );
+
+  ctx.lineTo(
+    cx + 210,
+    cy - 145
+  );
+
+  ctx.lineTo(
+    cx + 160,
+    cy - 15
+  );
+
+  ctx.lineTo(
+    cx + 235,
+    cy + 45
+  );
+
+  ctx.lineTo(
+    cx + 90,
+    cy + 20
+  );
+
+  ctx.stroke();
+
+  /*
+    Head
+  */
+
+  ctx.shadowColor =
+    "#00ffff";
+
+  ctx.fillStyle =
+    "#050911";
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    cx - 75,
+    cy - 95
+  );
+
+  ctx.lineTo(
+    cx,
+    cy - 165
+  );
+
+  ctx.lineTo(
+    cx + 80,
+    cy - 95
+  );
+
+  ctx.lineTo(
+    cx + 45,
+    cy - 10
+  );
+
+  ctx.lineTo(
+    cx,
+    cy + 20
+  );
+
+  ctx.lineTo(
+    cx - 50,
+    cy - 5
+  );
+
+  ctx.closePath();
+
+  ctx.fill();
+
+  ctx.strokeStyle =
+    "#00ffff";
+
+  ctx.lineWidth =
+    3;
+
+  ctx.stroke();
+
+  /*
+    Horns
+  */
+
+  ctx.strokeStyle =
+    "#9b21ff";
+
+  ctx.lineWidth =
+    7;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    cx - 55,
+    cy - 110
+  );
+
+  ctx.lineTo(
+    cx - 110,
+    cy - 180
+  );
+
+  ctx.moveTo(
+    cx + 55,
+    cy - 110
+  );
+
+  ctx.lineTo(
+    cx + 110,
+    cy - 180
+  );
+
+  ctx.stroke();
+
+  /*
+    Eyes
+  */
+
+  const eyeGlow =
+    18 +
+    Math.sin(
+      time * .008
+    ) * 8;
+
+  ctx.shadowBlur =
+    eyeGlow;
+
+  ctx.shadowColor =
+    "#00ffff";
+
+  ctx.fillStyle =
+    "#bfffff";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx - 27,
+    cy - 65,
+    13,
+    6,
+    -.25,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx + 27,
+    cy - 65,
+    13,
+    6,
+    .25,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  /*
+    Neon circuitry
+  */
+
+  ctx.shadowBlur =
+    10;
+
+  ctx.lineWidth =
+    2;
+
+  const circuitColors =
+    [
+      "#00ffff",
+      "#9b21ff",
+      "#31ff67"
+    ];
+
+  for (
+    let i = 0;
+    i < 12;
+    i++
+  ) {
+
+    const color =
+      circuitColors[
+        i %
+        circuitColors.length
+      ];
+
+    ctx.strokeStyle =
+      color;
+
+    ctx.beginPath();
+
+    const offset =
+      i * 13;
+
+    ctx.moveTo(
+      cx - 80 + offset,
+      cy - 20
+    );
+
+    ctx.lineTo(
+      cx - 40 + offset,
+      cy + 15
+    );
+
+    ctx.lineTo(
+      cx - 10 + offset,
+      cy + 60
+    );
+
+    ctx.stroke();
+
+  }
+
+  /*
+    Claws
+  */
+
+  ctx.strokeStyle =
+    "#00ffff";
+
+  ctx.lineWidth =
+    4;
+
+  for (
+    let i = 0;
+    i < 3;
+    i++
+  ) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      cx - 70 +
+        i * 25,
+      cy + 105
+    );
+
+    ctx.lineTo(
+      cx - 85 +
+        i * 25,
+      cy + 140
+    );
+
+    ctx.stroke();
+
+  }
+
+  /*
+    Phase intensity
+  */
+
+  if (phase >= 2) {
+
+    ctx.globalAlpha =
+      .7;
+
+    ctx.strokeStyle =
+      "#00ffff";
+
+    ctx.lineWidth =
+      2;
+
+    for (
+      let i = 0;
+      i < 5;
+      i++
+    ) {
+
+      ctx.beginPath();
+
+      ctx.arc(
+        cx,
+        cy,
+        150 +
+          i * 18 +
+          pulse,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.stroke();
+
+    }
+
+  }
+
+  ctx.restore();
+
+  bossPulse *= .88;
+}
+
+/* =============================================
+   DRAW ATTACKS
+============================================= */
+
+function drawAttacks() {
+
+  for (
+    let i =
+      attacks.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    const attack =
+      attacks[i];
+
+    attack.life -= .035;
+
+    const targetX =
+      W * .66;
+
+    const targetY =
+      H * .42;
+
+    attack.x =
+      attack.x +
+      (targetX -
+        attack.x) *
+        .07;
+
+    attack.y =
+      attack.y +
+      (targetY -
+        attack.y) *
+        .07;
+
+    ctx.save();
+
+    ctx.shadowBlur =
+      20;
+
+    ctx.shadowColor =
+      "#00ffff";
+
+    ctx.strokeStyle =
+      "#00ffff";
+
+    ctx.lineWidth =
+      4;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      attack.x - 25,
+      attack.y
+    );
+
+    ctx.lineTo(
+      attack.x + 25,
+      attack.y
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+
+    if (
+      attack.life <= 0
+    ) {
+
+      attacks.splice(
+        i,
+        1
+      );
+
+    }
+
+  }
+
+}
+
+/* =============================================
+   PARTICLE DRAW
+============================================= */
+
+function drawParticles() {
+
+  for (
+    let i =
+      particles.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    const p =
+      particles[i];
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    p.vy += .03;
+
+    p.life -= .025;
+
+    ctx.save();
+
+    ctx.globalAlpha =
+      Math.max(
+        0,
+        p.life
+      );
+
+    ctx.fillStyle =
+      p.color;
+
+    ctx.shadowBlur =
+      12;
+
+    ctx.shadowColor =
+      p.color;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y,
+      p.size,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+    if (
+      p.life <= 0
+    ) {
+
+      particles.splice(
+        i,
+        1
+      );
+
+    }
+
+  }
+
+}
+
+/* =============================================
+   BACKGROUND
+============================================= */
+
+function drawBackground(
+  time
+) {
+
+  ctx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  const gradient =
+    ctx.createRadialGradient(
+      W * .66,
+      H * .42,
+      20,
+      W * .66,
+      H * .42,
+      W * .65
+    );
+
+  gradient.addColorStop(
+    0,
+    "rgba(0,255,255,.08)"
+  );
+
+  gradient.addColorStop(
+    .45,
+    "rgba(120,0,255,.07)"
+  );
+
+  gradient.addColorStop(
+    1,
+    "rgba(0,0,0,0)"
+  );
+
+  ctx.fillStyle =
+    gradient;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+  /*
+    Digital falling particles
+  */
+
+  ctx.save();
+
+  ctx.globalAlpha =
+    .12;
+
+  ctx.fillStyle =
+    "#00ff9d";
+
+  ctx.font =
+    "10px monospace";
+
+  for (
+    let i = 0;
+    i < 90;
+    i++
+  ) {
+
+    const x =
+      (i * 97) %
+      W;
+
+    const y =
+      (
+        time * .02 +
+        i * 73
+      ) %
+      H;
+
+    ctx.fillText(
+      Math.random() >
+        .5
+        ? "1"
+        : "0",
+      x,
+      y
+    );
+
+  }
+
+  ctx.restore();
+
+  /*
+    Ground
+  */
+
+  ctx.save();
+
+  ctx.strokeStyle =
+    "rgba(0,255,255,.12)";
+
+  ctx.lineWidth =
+    1;
+
+  for (
+    let x = 0;
+    x < W;
+    x += 50
+  ) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x,
+      H * .82
+    );
+
+    ctx.lineTo(
+      W / 2 +
+        (x - W / 2) *
+        .3,
+      H
+    );
+
+    ctx.stroke();
+
+  }
+
+  ctx.restore();
+
+}
+
+/* =============================================
+   MAIN LOOP
+============================================= */
+
+function animate(
+  time
+) {
+
+  ctx.save();
+
+  if (
+    shake > 0
+  ) {
+
+    ctx.translate(
+      (Math.random() - .5) *
+        shake,
+
+      (Math.random() - .5) *
+        shake
+    );
+
+    shake *= .9;
+
+  }
+
+  drawBackground(
+    time
+  );
+
+  drawCryptCreature(
+    time
+  );
+
+  drawAttacks();
+
+  drawParticles();
+
+  ctx.restore();
+
+  requestAnimationFrame(
+    animate
+  );
+
+}
+
+requestAnimationFrame(
+  animate
+);
+
+</script>
+
 </body>
 </html>
