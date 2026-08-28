@@ -1558,76 +1558,41 @@ function renderHeroes() {
   const container =
     document.getElementById("heroes");
 
+  if (!container) {
+    return;
+  }
+
   container.innerHTML = "";
 
   const heroes =
     state.heroes || [];
-
-  const classes = [
-    {
-      icon: "⚔️",
-      name: "WARRIOR"
-    },
-    {
-      icon: "🥷",
-      name: "ASSASSIN"
-    },
-    {
-      icon: "🔮",
-      name: "MAGE"
-    },
-    {
-      icon: "🔥",
-      name: "BERSERKER"
-    },
-    {
-      icon: "🤖",
-      name: "CYBER"
-    }
-  ];
 
   for (let i = 0; i < 5; i++) {
 
     const hero =
       heroes[i];
 
-    const role =
-      classes[i];
-
     if (!hero) {
 
       container.innerHTML += `
-        <div
-          class="hero-card"
-          style="
-            position:relative;
-            opacity:.45;
-            border-style:dashed;
-          "
-        >
+        <div class="hero-card">
 
           <div class="rank">
             ${i + 1}
           </div>
 
-          <div
-            class="avatar"
-            style="
-              box-shadow:
-                0 0 8px rgba(0,255,255,.15);
-            "
-          >
+          <div class="avatar">
             ?
           </div>
 
           <div class="hero-info">
 
             <div class="hero-name">
-              ${role.icon} ${role.name}
+              OPEN SLOT
             </div>
 
             <div class="hero-power">
-              GIFT TO ENTER
+              Gift to enter
             </div>
 
           </div>
@@ -1637,6 +1602,41 @@ function renderHeroes() {
 
       continue;
     }
+
+    container.innerHTML += `
+      <div class="hero-card active">
+
+        <div class="rank">
+          ${hero.rank}
+        </div>
+
+        ${avatarHTML(
+          hero,
+          "avatar"
+        )}
+
+        <div class="hero-info">
+
+          <div class="hero-name">
+            ${escapeHtml(
+              hero.nickname
+            )}
+          </div>
+
+          <div class="hero-power">
+            ⚡ ${
+              Number(
+                hero.diamonds || 0
+              ).toLocaleString()
+            }
+          </div>
+
+        </div>
+
+      </div>
+    `;
+  }
+}
 
     const power =
       Number(hero.diamonds || 0);
