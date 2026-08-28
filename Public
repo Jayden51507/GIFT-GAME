@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>CRYPT RAID</title>
 
-<style>
-* {
+<style>* {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -23,77 +21,54 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-button {
-  font-family: inherit;
-  -webkit-appearance: none;
-}
-
 #game {
   position: relative;
   width: 100vw;
-  height: 100dvh;
+  height: 100vh;
   min-height: 480px;
   overflow: hidden;
-
   background:
     radial-gradient(
-      circle at 50% 45%,
-      rgba(0,255,255,.10),
-      transparent 24%
+      circle at 67% 43%,
+      rgba(0,255,255,.13),
+      transparent 27%
     ),
     radial-gradient(
-      circle at 55% 48%,
+      circle at 65% 50%,
       rgba(150,0,255,.14),
-      transparent 42%
+      transparent 38%
     ),
     linear-gradient(
       180deg,
       #010207 0%,
-      #040612 50%,
+      #050712 55%,
       #010207 100%
     );
 }
 
 /* =========================
-   CYBER GRID
+   BACKGROUND
 ========================= */
 
 #game::before {
   content: "";
   position: absolute;
   inset: 0;
+  opacity: .16;
   pointer-events: none;
-  opacity: .18;
 
   background:
     repeating-linear-gradient(
       90deg,
       transparent 0,
-      transparent 48px,
-      rgba(0,255,255,.055) 49px,
-      transparent 50px
+      transparent 49px,
+      rgba(0,255,255,.06) 50px
     ),
     repeating-linear-gradient(
       0deg,
       transparent 0,
-      transparent 48px,
-      rgba(150,0,255,.045) 49px,
-      transparent 50px
-    );
-}
-
-#game::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 180;
-
-  background:
-    radial-gradient(
-      ellipse at center,
-      transparent 35%,
-      rgba(0,0,0,.45) 100%
+      transparent 49px,
+      rgba(140,40,255,.04) 50px
     );
 }
 
@@ -118,40 +93,34 @@ button {
 
 .header {
   position: absolute;
-  top: max(10px, env(safe-area-inset-top));
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
-
   z-index: 30;
+
   text-align: center;
   pointer-events: none;
-  white-space: nowrap;
 }
 
 .logo {
-  font-size: clamp(20px, 5vw, 30px);
+  font-size: clamp(19px, 3vw, 28px);
   font-weight: 1000;
   letter-spacing: 4px;
 
-  color: #ffffff;
-
   text-shadow:
-    0 0 6px #00ffff,
-    0 0 16px #8a2cff,
-    0 0 32px #00ffff;
+    0 0 8px #00ffff,
+    0 0 18px #8a2cff,
+    0 0 35px #00ffff;
 }
 
 .subtitle {
   margin-top: 2px;
 
   font-size: 8px;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
 
   color: #65ffff;
-  opacity: .75;
-
-  text-shadow:
-    0 0 8px #00ffff;
+  opacity: .65;
 }
 
 /* =========================
@@ -160,27 +129,23 @@ button {
 
 #round {
   position: absolute;
+  top: 16px;
+  right: 18px;
 
-  top: max(10px, env(safe-area-inset-top));
-  right: 12px;
-
-  z-index: 35;
+  z-index: 30;
 
   padding: 5px 9px;
 
-  border: 1px solid rgba(0,255,255,.35);
+  border: 1px solid rgba(0,255,255,.25);
   border-radius: 20px;
 
-  background: rgba(0,0,0,.55);
+  background: rgba(0,0,0,.4);
 
-  color: #8fffff;
+  color: rgba(150,255,255,.7);
 
-  font-size: 7px;
+  font-size: 8px;
   font-weight: 900;
   letter-spacing: 2px;
-
-  box-shadow:
-    0 0 12px rgba(0,255,255,.12);
 }
 
 /* =========================
@@ -190,51 +155,48 @@ button {
 .boss-area {
   position: absolute;
 
-  top: clamp(62px, 9vh, 82px);
+  top: 68px;
   left: 50%;
 
-  width: min(500px, 58vw);
+  width: min(560px, 48vw);
 
   transform: translateX(-50%);
 
-  z-index: 25;
+  z-index: 20;
 
   text-align: center;
-
-  pointer-events: none;
 }
 
 .boss-name {
-  font-size: clamp(9px, 1.5vw, 12px);
-
-  font-weight: 1000;
+  font-size: 10px;
+  font-weight: 900;
   letter-spacing: 3px;
 
-  color: #cfffff;
+  color: #bfffff;
 
   text-shadow:
-    0 0 8px #00ffff,
-    0 0 18px #8a2cff;
+    0 0 7px #00ffff,
+    0 0 15px #8a2cff;
 }
 
 .hp-shell {
   position: relative;
 
   width: 100%;
-  height: 14px;
+  height: 15px;
 
-  margin-top: 7px;
+  margin-top: 6px;
+
   padding: 2px;
 
   border: 1px solid rgba(0,255,255,.65);
   border-radius: 20px;
 
-  background: rgba(0,0,0,.8);
+  background: rgba(0,0,0,.75);
 
   box-shadow:
-    0 0 10px rgba(0,255,255,.3),
-    0 0 20px rgba(140,0,255,.15),
-    inset 0 0 10px rgba(140,0,255,.2);
+    0 0 8px rgba(0,255,255,.25),
+    inset 0 0 10px rgba(140,0,255,.18);
 }
 
 #hp {
@@ -246,15 +208,15 @@ button {
   background:
     linear-gradient(
       90deg,
-      #00ffff 0%,
-      #287cff 35%,
-      #9b21ff 70%,
-      #ff19d9 100%
+      #00ffff,
+      #287cff,
+      #9b21ff,
+      #ff19d9
     );
 
   box-shadow:
-    0 0 8px #00ffff,
-    0 0 18px #8b20ff;
+    0 0 7px #00ffff,
+    0 0 14px #8b20ff;
 
   transition: width .25s ease;
 }
@@ -263,9 +225,8 @@ button {
   margin-top: 3px;
 
   font-size: 8px;
-  font-weight: 700;
 
-  color: rgba(255,255,255,.6);
+  color: rgba(255,255,255,.55);
 }
 
 /* =========================
@@ -276,36 +237,31 @@ button {
   position: absolute;
   inset: 0;
 
-  width: 100%;
-  height: 100%;
-
   z-index: 3;
-
-  pointer-events: none;
 }
 
 /* =========================
-   RAID PARTY
+   TOP 5
 ========================= */
 
 .party {
   position: absolute;
 
-  top: clamp(90px, 13vh, 115px);
-  left: 12px;
+  top: 96px;
+  left: 14px;
 
-  width: min(155px, 31vw);
+  width: 150px;
 
   z-index: 25;
 }
 
 .party-title {
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 
-  color: #73ffff;
+  color: #65ffff;
 
   font-size: 8px;
-  font-weight: 1000;
+  font-weight: 900;
   letter-spacing: 2px;
 
   text-shadow:
@@ -313,88 +269,56 @@ button {
 }
 
 .hero-card {
-  position: relative;
-
   display: flex;
   align-items: center;
 
   gap: 6px;
 
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 
-  min-height: 40px;
-  padding: 5px 7px;
+  padding: 4px 6px;
 
-  border: 1px solid rgba(0,255,255,.22);
-  border-radius: 9px;
+  min-height: 39px;
 
-  background:
-    linear-gradient(
-      100deg,
-      rgba(3,10,20,.9),
-      rgba(15,3,30,.72)
-    );
-
-  box-shadow:
-    0 0 10px rgba(0,255,255,.05),
-    inset 0 0 12px rgba(120,0,255,.08);
-
-  backdrop-filter: blur(6px);
-
-  overflow: hidden;
-}
-
-.hero-card::after {
-  content: "";
-
-  position: absolute;
-  inset: 0;
-
-  pointer-events: none;
+  border: 1px solid rgba(0,255,255,.18);
+  border-radius: 7px;
 
   background:
     linear-gradient(
       90deg,
-      transparent,
-      rgba(0,255,255,.06),
-      transparent
+      rgba(3,8,18,.82),
+      rgba(8,5,25,.55)
     );
 
-  animation: cardScan 3s linear infinite;
-}
+  box-shadow:
+    0 0 8px rgba(0,255,255,.05);
 
-@keyframes cardScan {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(100%);
-  }
+  overflow: hidden;
 }
 
 .hero-card.active {
-  border-color: rgba(0,255,255,.65);
+  border-color:
+    rgba(0,255,255,.5);
 
   box-shadow:
-    0 0 12px rgba(0,255,255,.22),
-    inset 0 0 15px rgba(120,0,255,.14);
+    0 0 9px rgba(0,255,255,.14),
+    inset 0 0 12px rgba(130,0,255,.1);
 }
 
 .rank {
-  width: 13px;
-
-  color: #a6ffff;
+  width: 12px;
 
   font-size: 8px;
-  font-weight: 1000;
+  font-weight: 900;
+
+  color: #a6ffff;
 }
 
 .avatar {
-  width: 27px;
-  height: 27px;
+  width: 26px;
+  height: 26px;
 
-  flex: 0 0 27px;
+  flex: 0 0 26px;
 
   display: flex;
   align-items: center;
@@ -411,18 +335,16 @@ button {
       #7b19ff
     );
 
-  border: 1px solid rgba(255,255,255,.8);
+  border: 1px solid rgba(255,255,255,.7);
 
   font-size: 9px;
-  font-weight: 1000;
-
-  box-shadow:
-    0 0 8px rgba(0,255,255,.25);
+  font-weight: 900;
 }
 
 .avatar img {
   width: 100%;
   height: 100%;
+
   object-fit: cover;
 }
 
@@ -433,7 +355,7 @@ button {
 
 .hero-name {
   font-size: 9px;
-  font-weight: 1000;
+  font-weight: 900;
 
   white-space: nowrap;
   overflow: hidden;
@@ -441,25 +363,24 @@ button {
 }
 
 .hero-power {
-  margin-top: 2px;
-
-  color: #7affff;
+  margin-top: 1px;
 
   font-size: 7px;
-  font-weight: 700;
+
+  color: #7affff;
 }
 
 /* =========================
-   LIVE EVENTS
+   EVENTS
 ========================= */
 
 #events {
   position: absolute;
 
-  top: clamp(90px, 13vh, 115px);
-  right: 12px;
+  top: 96px;
+  right: 14px;
 
-  width: min(165px, 30vw);
+  width: 165px;
 
   z-index: 25;
 
@@ -469,32 +390,32 @@ button {
 .event {
   margin-bottom: 5px;
 
-  padding: 6px 8px;
+  padding: 5px 7px;
 
-  border: 1px solid rgba(0,255,255,.25);
-  border-radius: 8px;
+  border-radius: 6px;
+
+  border: 1px solid rgba(0,255,255,.22);
 
   background:
-    rgba(2,7,17,.72);
-
-  backdrop-filter: blur(7px);
+    rgba(3,7,17,.65);
 
   box-shadow:
-    0 0 12px rgba(0,255,255,.08);
+    0 0 10px rgba(0,255,255,.06);
 
-  animation: eventIn .3s ease-out;
+  animation:
+    eventIn .25s ease-out;
 
   font-size: 8px;
 
-  opacity: .9;
+  opacity: .85;
 }
 
 .event.gift {
-  border-color: rgba(255,0,220,.55);
+  border-color:
+    rgba(255,0,220,.4);
 
   box-shadow:
-    0 0 14px rgba(255,0,220,.16),
-    inset 0 0 12px rgba(255,0,220,.06);
+    0 0 10px rgba(255,0,220,.12);
 }
 
 .event b {
@@ -513,30 +434,30 @@ button {
 
 @keyframes eventIn {
   from {
-    transform: translateX(18px) scale(.9);
+    transform: translateX(15px);
     opacity: 0;
   }
 
   to {
-    transform: translateX(0) scale(1);
-    opacity: .9;
+    transform: translateX(0);
+    opacity: .85;
   }
 }
 
 /* =========================
-   CROWD / LIKERS
+   CROWD
 ========================= */
 
 .crowd {
   position: absolute;
 
   left: 50%;
-  bottom: max(34px, env(safe-area-inset-bottom));
+  bottom: 45px;
 
   transform: translateX(-50%);
 
-  width: min(500px, 68vw);
-  height: 68px;
+  width: min(600px,70vw);
+  height: 70px;
 
   z-index: 12;
 
@@ -546,17 +467,17 @@ button {
 
   flex-wrap: wrap;
 
-  gap: 3px;
+  gap: 2px;
 
   overflow: hidden;
 
-  padding: 5px;
+  padding: 4px;
 
   mask-image:
     linear-gradient(
       to bottom,
       transparent,
-      black 28%
+      black 30%
     );
 }
 
@@ -577,13 +498,13 @@ button {
       #8d21ff
     );
 
-  border: 1px solid rgba(255,255,255,.5);
+  border: 1px solid rgba(255,255,255,.45);
 
   font-size: 7px;
-  font-weight: 1000;
+  font-weight: 900;
 
   box-shadow:
-    0 0 7px rgba(0,255,255,.25);
+    0 0 6px rgba(0,255,255,.22);
 
   animation:
     crowdIn .3s ease-out;
@@ -601,8 +522,8 @@ button {
 @keyframes crowdIn {
   from {
     transform:
-      translateY(12px)
-      scale(.35);
+      translateY(10px)
+      scale(.4);
 
     opacity: 0;
   }
@@ -619,46 +540,43 @@ button {
 .crowd-label {
   position: absolute;
 
-  bottom: max(17px, calc(env(safe-area-inset-bottom) + 5px));
+  bottom: 24px;
   left: 50%;
 
-  transform: translateX(-50%);
+  transform:
+    translateX(-50%);
 
   z-index: 15;
 
   font-size: 7px;
-  font-weight: 900;
-
   letter-spacing: 3px;
 
-  color: rgba(150,255,255,.55);
-
-  text-shadow:
-    0 0 8px rgba(0,255,255,.5);
+  color:
+    rgba(150,255,255,.45);
 
   pointer-events: none;
 }
 
 /* =========================
-   DAMAGE NUMBERS
+   DAMAGE
 ========================= */
 
 .damage {
   position: absolute;
 
-  z-index: 60;
+  z-index: 40;
 
   pointer-events: none;
 
   font-weight: 1000;
-  font-size: clamp(20px, 4vw, 30px);
+
+  font-size: 20px;
 
   color: white;
 
   text-shadow:
-    0 0 8px #00ffff,
-    0 0 18px #a020ff,
-    0 0 30px #ff19d9;
+    0 0 7px #00ffff,
+    0 0 18px #a020ff;
 
   animation:
     damageFloat 1s ease-out forwards;
@@ -677,8 +595,8 @@ button {
     opacity: 0;
 
     transform:
-      translate(-50%,-70px)
-      scale(1.25);
+      translate(-50%,-65px)
+      scale(1.2);
   }
 }
 
@@ -690,16 +608,16 @@ button {
   position: absolute;
 
   left: 50%;
-  top: 47%;
+  top: 45%;
 
   transform:
     translate(-50%,-50%);
 
-  z-index: 70;
+  z-index: 60;
 
   pointer-events: none;
 
-  font-size: clamp(20px, 5vw, 32px);
+  font-size: 20px;
   font-weight: 1000;
 
   letter-spacing: 4px;
@@ -708,8 +626,7 @@ button {
 
   text-shadow:
     0 0 10px #00ffff,
-    0 0 25px #9d20ff,
-    0 0 45px #ff19d9;
+    0 0 25px #9d20ff;
 
   opacity: 0;
 }
@@ -733,7 +650,7 @@ button {
 
     transform:
       translate(-50%,-50%)
-      scale(1.1);
+      scale(1.08);
   }
 
   75% {
@@ -745,7 +662,7 @@ button {
 
     transform:
       translate(-50%,-50%)
-      scale(1.2);
+      scale(1.15);
   }
 }
 
@@ -770,9 +687,9 @@ button {
   background:
     radial-gradient(
       circle,
-      rgba(0,255,255,.22),
-      rgba(80,0,180,.2),
-      rgba(0,0,0,.88)
+      rgba(0,255,255,.2),
+      rgba(80,0,180,.18),
+      rgba(0,0,0,.82)
     );
 
   text-align: center;
@@ -787,7 +704,7 @@ button {
 
 .victory-title {
   font-size:
-    clamp(28px, 8vw, 50px);
+    clamp(28px,6vw,46px);
 
   font-weight: 1000;
 
@@ -830,45 +747,34 @@ button {
 #testToggle {
   position: absolute;
 
-  left: max(10px, env(safe-area-inset-left));
-  bottom: max(10px, env(safe-area-inset-bottom));
+  left: 12px;
+  bottom: 12px;
 
   z-index: 250;
 
-  width: 45px;
-  height: 45px;
+  width: 43px;
+  height: 43px;
 
-  border: 1px solid rgba(0,255,255,.55);
+  border: 1px solid rgba(0,255,255,.4);
+
   border-radius: 50%;
 
   background:
-    radial-gradient(
-      circle,
-      rgba(0,255,255,.12),
-      rgba(2,7,15,.95)
-    );
+    rgba(2,7,15,.9);
 
   color: white;
 
   font-size: 17px;
 
   box-shadow:
-    0 0 12px rgba(0,255,255,.2),
-    inset 0 0 10px rgba(0,255,255,.08);
+    0 0 15px rgba(0,255,255,.15);
 
   cursor: pointer;
-
-  pointer-events: auto;
 }
 
-#testToggle:active {
-  transform: scale(.92);
-
+#testToggle:hover {
   background:
-    rgba(0,255,255,.2);
-
-  box-shadow:
-    0 0 25px rgba(0,255,255,.5);
+    rgba(0,255,255,.15);
 }
 
 /* =========================
@@ -878,12 +784,12 @@ button {
 #testPanel {
   position: absolute;
 
-  left: max(10px, env(safe-area-inset-left));
-  bottom: max(62px, calc(env(safe-area-inset-bottom) + 52px));
+  left: 12px;
+  bottom: 62px;
 
   z-index: 240;
 
-  width: min(270px, calc(100vw - 20px));
+  width: 255px;
 
   max-height: 0;
 
@@ -896,20 +802,14 @@ button {
   pointer-events: none;
 
   border: 1px solid transparent;
-  border-radius: 12px;
+
+  border-radius: 11px;
 
   background:
-    linear-gradient(
-      180deg,
-      rgba(4,10,20,.98),
-      rgba(2,4,12,.98)
-    );
+    rgba(1,5,12,.96);
 
   box-shadow:
-    0 0 25px rgba(0,255,255,.12),
-    0 0 50px rgba(130,0,255,.08);
-
-  backdrop-filter: blur(12px);
+    0 0 25px rgba(0,255,255,.12);
 
   transition:
     max-height .3s ease,
@@ -919,59 +819,50 @@ button {
 }
 
 #testPanel.open {
-  max-height: 340px;
+  max-height: 310px;
 
-  padding: 10px;
+  padding: 9px;
 
   opacity: 1;
 
   pointer-events: auto;
 
   border-color:
-    rgba(0,255,255,.35);
+    rgba(0,255,255,.3);
 }
 
 .test-title {
   color: #65ffff;
 
   font-size: 9px;
-  font-weight: 1000;
+  font-weight: 900;
 
   letter-spacing: 2px;
 
-  margin-bottom: 8px;
-
-  text-shadow:
-    0 0 8px #00ffff;
+  margin-bottom: 7px;
 }
 
 .test-row {
   display: grid;
 
   grid-template-columns:
-    minmax(0,1fr)
-    36px
-    45px
-    55px;
+    1fr 35px 44px 50px;
 
-  gap: 4px;
+  gap: 3px;
 
   align-items: center;
 
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .test-name {
-  min-width: 0;
+  font-size: 8px;
 
   overflow: hidden;
 
   white-space: nowrap;
 
   text-overflow: ellipsis;
-
-  font-size: 8px;
-  font-weight: 700;
 }
 
 .test-row button,
@@ -979,7 +870,7 @@ button {
   border:
     1px solid rgba(0,255,255,.35);
 
-  border-radius: 6px;
+  border-radius: 5px;
 
   background:
     rgba(0,255,255,.07);
@@ -988,33 +879,20 @@ button {
 
   font-size: 8px;
 
-  padding: 6px 2px;
+  padding: 5px 2px;
 
   cursor: pointer;
-
-  transition:
-    transform .12s ease,
-    background .12s ease,
-    box-shadow .12s ease;
-}
-
-.test-row button:active,
-#reset:active {
-  transform: scale(.94);
 }
 
 .test-row button:hover,
 #reset:hover {
   background:
-    rgba(0,255,255,.18);
-
-  box-shadow:
-    0 0 8px rgba(0,255,255,.15);
+    rgba(0,255,255,.2);
 }
 
 .gift-button {
   border-color:
-    rgba(255,0,220,.5) !important;
+    rgba(255,0,220,.45) !important;
 
   color:
     #ffb4f4 !important;
@@ -1023,86 +901,57 @@ button {
 #reset {
   width: 100%;
 
-  margin-top: 6px;
-
-  border-color:
-    rgba(255,60,120,.35);
+  margin-top: 5px;
 }
 
 /* =========================
    MOBILE
 ========================= */
 
-@media (max-width: 700px) {
+@media(max-width:700px) {
 
   .header {
-    top: max(8px, env(safe-area-inset-top));
+    top: 10px;
   }
 
   .logo {
-    font-size: 20px;
-    letter-spacing: 3px;
-  }
-
-  .subtitle {
-    font-size: 7px;
     letter-spacing: 3px;
   }
 
   #round {
-    top: max(8px, env(safe-area-inset-top));
-    right: 8px;
-
-    font-size: 6px;
+    top: 11px;
+    right: 10px;
   }
 
   .boss-area {
-    top: 59px;
-    width: 58vw;
-  }
+    top: 57px;
 
-  .boss-name {
-    font-size: 8px;
-    letter-spacing: 2px;
-  }
-
-  .hp-shell {
-    height: 12px;
-  }
-
-  .hp-text {
-    font-size: 7px;
+    width: 55vw;
   }
 
   .party {
-    top: 88px;
+    top: 86px;
     left: 7px;
-    width: 126px;
+
+    width: 122px;
   }
 
   .party-title {
     font-size: 7px;
-    letter-spacing: 1.5px;
   }
 
   .hero-card {
     min-height: 34px;
 
-    padding: 3px 5px;
+    padding: 3px 4px;
 
     gap: 4px;
-
-    margin-bottom: 4px;
-  }
-
-  .rank {
-    width: 10px;
-    font-size: 7px;
   }
 
   .avatar {
     width: 23px;
     height: 23px;
+
     flex-basis: 23px;
   }
 
@@ -1115,13 +964,15 @@ button {
   }
 
   #events {
-    top: 88px;
+    top: 86px;
     right: 7px;
-    width: 118px;
+
+    width: 125px;
   }
 
   .event {
     padding: 4px 5px;
+
     font-size: 7px;
   }
 
@@ -1130,9 +981,11 @@ button {
   }
 
   .crowd {
-    bottom: max(30px, env(safe-area-inset-bottom));
-    width: 72vw;
-    height: 52px;
+    bottom: 37px;
+
+    width: 70vw;
+
+    height: 55px;
   }
 
   .crowd-avatar {
@@ -1141,74 +994,28 @@ button {
   }
 
   .crowd-label {
-    bottom: max(15px, calc(env(safe-area-inset-bottom) + 1px));
+    bottom: 20px;
+
     font-size: 6px;
   }
 
   #testToggle {
     left: 8px;
-    bottom: max(8px, env(safe-area-inset-bottom));
+    bottom: 8px;
 
-    width: 40px;
-    height: 40px;
+    width: 39px;
+    height: 39px;
 
     font-size: 15px;
   }
 
   #testPanel {
     left: 8px;
+    bottom: 55px;
 
-    bottom:
-      max(55px, calc(env(safe-area-inset-bottom) + 48px));
-
-    width:
-      min(245px, calc(100vw - 16px));
-  }
-}
-
-/* =========================
-   VERY SMALL PHONES
-========================= */
-
-@media (max-width: 380px) {
-
-  .logo {
-    font-size: 18px;
+    width: 235px;
   }
 
-  .boss-area {
-    width: 55vw;
-  }
-
-  .party {
-    width: 116px;
-  }
-
-  .hero-card {
-    min-height: 31px;
-  }
-
-  .avatar {
-    width: 21px;
-    height: 21px;
-    flex-basis: 21px;
-  }
-
-  #events {
-    width: 105px;
-  }
-
-  .event {
-    font-size: 6px;
-  }
-
-  .test-row {
-    grid-template-columns:
-      minmax(0,1fr)
-      32px
-      40px
-      48px;
-  }
 }
 </style>
 </head>
@@ -1553,14 +1360,13 @@ socket.on(
 /* =============================================
    HEROES
 ============================================= */
+
 function renderHeroes() {
 
   const container =
-    document.getElementById("heroes");
-
-  if (!container) {
-    return;
-  }
+    document.getElementById(
+      "heroes"
+    );
 
   container.innerHTML = "";
 
@@ -1576,7 +1382,6 @@ function renderHeroes() {
 
       container.innerHTML += `
         <div class="hero-card">
-
           <div class="rank">
             ${i + 1}
           </div>
@@ -1586,7 +1391,6 @@ function renderHeroes() {
           </div>
 
           <div class="hero-info">
-
             <div class="hero-name">
               OPEN SLOT
             </div>
@@ -1594,123 +1398,12 @@ function renderHeroes() {
             <div class="hero-power">
               Gift to enter
             </div>
-
           </div>
-
         </div>
       `;
 
       continue;
     }
-
-    container.innerHTML += `
-      <div class="hero-card active">
-
-        <div class="rank">
-          ${hero.rank}
-        </div>
-
-        ${avatarHTML(
-          hero,
-          "avatar"
-        )}
-
-        <div class="hero-info">
-
-          <div class="hero-name">
-            ${escapeHtml(
-              hero.nickname
-            )}
-          </div>
-
-          <div class="hero-power">
-            ⚡ ${
-              Number(
-                hero.diamonds || 0
-              ).toLocaleString()
-            }
-          </div>
-
-        </div>
-
-      </div>
-    `;
-  }
-}
-
-    const power =
-      Number(hero.diamonds || 0);
-
-    container.innerHTML += `
-      <div
-        class="hero-card active"
-        style="
-          position:relative;
-          border-color:rgba(0,255,255,.45);
-          box-shadow:
-            0 0 10px rgba(0,255,255,.12),
-            inset 0 0 14px rgba(130,0,255,.12);
-        "
-      >
-
-        <div class="rank">
-          ${hero.rank}
-        </div>
-
-        ${avatarHTML(
-          hero,
-          "avatar"
-        )}
-
-        <div class="hero-info">
-
-          <div
-            class="hero-name"
-            style="
-              display:flex;
-              align-items:center;
-              gap:3px;
-            "
-          >
-            <span>
-              ${role.icon}
-            </span>
-
-            <span>
-              ${escapeHtml(
-                hero.nickname
-              )}
-            </span>
-          </div>
-
-          <div
-            class="hero-power"
-            style="
-              color:#7affff;
-            "
-          >
-            ⚡ ${power.toLocaleString()}
-          </div>
-
-        </div>
-
-        <div
-          style="
-            position:absolute;
-            right:5px;
-            top:4px;
-            font-size:6px;
-            letter-spacing:1px;
-            color:rgba(255,255,255,.35);
-          "
-        >
-          ${role.name}
-        </div>
-
-      </div>
-    `;
-  }
-}
 
     container.innerHTML += `
       <div class="hero-card active">
@@ -2957,18 +2650,7 @@ function animate(
 requestAnimationFrame(
   animate
 );
-const testToggle =
-  document.getElementById("testToggle");
 
-const testPanel =
-  document.getElementById("testPanel");
-
-testToggle.addEventListener(
-  "click",
-  () => {
-    testPanel.classList.toggle("open");
-  }
-);
 </script>
 
 </body>
