@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Gift Rocket Overlay</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 800px; height: 600px;
+    background: transparent; /* transparent so OBS shows only the game */
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #fff;
+  }
+  #stage {
+    position: relative;
+    width: 800px; height: 600px;
+  }
+  #sky {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at bottom, rgba(20,20,50,0.0) 0%, rgba(0,0,0,0) 100%);
+  }
+  #goalLabel {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    font-size: 22px; font-weight: 700;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    letter-spacing: 1px;
+  }
+  #barWrap {
+    position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+    width: 500px; height: 34px;
+    background: rgba(0,0,0,0.45);
+    border: 3px solid rgba(255,255,255,0.85);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  }
+  #barFill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #ff5f6d, #ffc371);
+    transition: width 0.4s ease-out;
+  }
+  #barText {
+    position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+    font-size: 16px; font-weight: 600;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+  }
+  #rocket {
+    position: absolute;
+    left: 50%; bottom: 110px;
+    transform: translate(-50%, 0);
+    font-size: 60px;
+    transition: bottom 0.4s ease-out, transform 0.4s ease-out;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  }
+  #rocket.launching {
+    transition: bottom 1.8s cubic-bezier(.4,0,.2,1), transform 1.8s ease-in;
+    bottom: 700px;
+  }
+  .gift-toast {
+    position: absolute;
+    left: 50%; bottom: 160px;
+    transform: translate(-50%, 0);
+    background: rgba(0,0,0,0.6);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    white-space: nowrap;
+    animation: floatUp 2.2s ease-out forwards;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+  }
+  @keyframes floatUp {
+    0%   { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
+    15%  { opacity: 1; transform: translate(-50%, 0) scale(1.05); }
+    30%  { transform: translate(-50%, 0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -60px) scale(1); }
+  }
+  #launchBanner {
+    position: absolute; top: 45%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    font-size: 48px; font-weight: 800;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.7);
+    opacity: 0;
+    pointer-events: none;
+  }
+  #launchBanner.show {
+    animation: bannerPop 2.4s ease-out forwards;
+  }
+  @keyframes bannerPop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    30%  { transform: translate(-50%, -50%) scale(1); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+  }
+  #testBtn {
+    position: absolute; top: 16px; right: 16px;
+    padding: 6px 12px; font-size: 12px;
+    background: rgba(255,255,255,0.15); color: #fff;
+    border: 1px solid rgba(255,255,255,0.4); border-radius: 8px;
+    cursor: pointer;
+  }
+  .confetti {
+    position: absolute; top: -10px;
+    width: 8px; height: 14px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(650px) rotate(400deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div id="sky"></div>
+    <div id="goalLabel">🚀 GIFT-FUELED ROCKET LAUNCH</div>
+    <div id="launchBanner">🎉 LIFT OFF! 🎉</div>
+    <div id="rocket">🚀</div>
+    <div id="barText">0 / 1000 fuel</div>
+    <div id="barWrap"><div id="barFill"></div></div>
+    <!-- Remove this button once you're testing with real gifts -->
+    <button id="testBtn">Test Gift (+50)</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const barFill = document.getElementById('barFill');
+    const barText = document.getElementById('barText');
+    const rocket = document.getElementById('rocket');
+    const stage = document.getElementById('stage');
+    const launchBanner = document.getElementById('launchBanner');
+    const testBtn = document.getElementById('testBtn');
+
+    function setBar(fuel, goal) {
+      const pct = Math.min(100, (fuel / goal) * 100);
+      barFill.style.width = pct + '%';
+      barText.textContent = `${fuel} / ${goal} fuel`;
+      // Rocket rises slightly with progress before full launch
+      const riseBase = 110;
+      const riseMax = 260;
+      rocket.style.bottom = (riseBase + (riseMax - riseBase) * (pct / 100)) + 'px';
+    }
+
+    function showGiftToast(evt) {
+      const toast = document.createElement('div');
+      toast.className = 'gift-toast';
+      const countTxt = evt.repeatCount > 1 ? ` x${evt.repeatCount}` : '';
+      toast.textContent = `🎁 ${evt.user} sent ${evt.giftName}${countTxt} (+${evt.value})`;
+      stage.appendChild(toast);
+      setTimeout(() => toast.remove(), 2300);
+    }
+
+    function spawnConfetti() {
+      const colors = ['#ff5f6d', '#ffc371', '#4facfe', '#43e97b', '#fbc2eb'];
+      for (let i = 0; i < 60; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 800 + 'px';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDuration = (1.2 + Math.random() * 1.2) + 's';
+        c.style.animationDelay = (Math.random() * 0.3) + 's';
+        stage.appendChild(c);
+        setTimeout(() => c.remove(), 3000);
+      }
+    }
+
+    socket.on('state', ({ fuel, goal }) => setBar(fuel, goal));
+
+    socket.on('gift', (evt) => showGiftToast(evt));
+
+    socket.on('launch', () => {
+      rocket.classList.add('launching');
+      launchBanner.classList.add('show');
+      spawnConfetti();
+      setTimeout(() => {
+        rocket.classList.remove('launching');
+        launchBanner.classList.remove('show');
+        rocket.style.bottom = '110px';
+      }, 4000);
+    });
+
+    testBtn.addEventListener('click', () => socket.emit('manual-test-gift'));
+  </script>
+</body>
+</html>
