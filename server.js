@@ -29,10 +29,12 @@ const GAME_FILE = path.join(__dirname, "Public");
 app.use(express.json());
 
 app.get("/", (req, res) => {
+  res.type("html");
   res.sendFile(GAME_FILE);
 });
 
 app.get("/overlay.html", (req, res) => {
+  res.type("html");
   res.sendFile(GAME_FILE);
 });
 
