@@ -1,75 +1,77 @@
-# TikTok Live Gift Rocket 🚀
+# Kingdom Territory 🏰
 
-A free, local gift-reactive game overlay for TikTok LIVE. Every gift adds
-"fuel" to a progress bar; when it fills, a rocket launches with confetti,
-then the game resets. Runs as an OBS Browser Source.
+A free, live TikTok gift + like-reactive game overlay. Every viewer who
+likes your stream claims a colored "territory" blob on a map. Their
+territory grows while they keep liking, and shrinks and despawns if they
+stop — freeing the spot for someone else. Gifts give an instant big growth
+boost, trigger an on-screen popup with the gifter's name/avatar, and are
+permanently recorded on a leaderboard (the leaderboard never decays — it's
+your proof/record of who gifted what, even after their blob despawns).
 
 ## How it works
 - `server.js` connects to your **public** TikTok LIVE stream using the
-  open-source `tiktok-live-connector` library (no API key needed) and
-  listens for gift events.
-- It forwards those events over a local websocket to `public/overlay.html`.
-- You add that page to OBS as a Browser Source, so it shows up in your
-  live video as an overlay.
+  open-source `tiktok-live-connector` library (no API key needed).
+- It listens for `like` and `gift` events, runs a small simulation loop
+  (grow on activity, decay over time, despawn when empty), and pushes
+  the live map + leaderboard + gift popups to `public/overlay.html` over
+  a websocket.
+- You add that page as a source in your streaming app (PRISM Live Studio
+  on mobile, OBS on desktop) so it appears live on camera.
 
-## Setup (one time)
-1. Install [Node.js](https://nodejs.org) if you don't have it (v18+).
-2. Open a terminal in this folder and run:
-   ```
-   npm install
-   ```
-3. Open `server.js` and change this line near the top to your TikTok
-   username (no @):
-   ```js
-   const TIKTOK_USERNAME = process.env.TIKTOK_USERNAME || 'YOUR_TIKTOK_USERNAME';
-   ```
+## Setup
+1. Push this project to a **private** GitHub repo.
+2. Deploy it to Render (or any Node host) as a Web Service:
+   - Build command: `npm install`
+   - Start command: `node server.js`
+3. Add an environment variable: `TIKTOK_USERNAME` = your TikTok username
+   (no @).
+4. Deploy — you'll get a URL like `https://your-app.onrender.com`.
 
-## Running it
-1. Go live on TikTok first (the library needs your stream to already be live).
-2. In the terminal:
-   ```
-   node server.js
-   ```
-3. You'll see `Overlay running at: http://localhost:8081`.
-4. In OBS: **Sources → + → Browser Source** →
-   URL: `http://localhost:8081/overlay.html`, size 800x600, check
-   "Shutdown source when not visible" **off**.
-5. Gifts on your live stream will now fill the rocket's fuel bar in
-   real time.
+## Testing
+Open `https://your-app.onrender.com/overlay.html` in a browser. Two
+buttons in the bottom-right — **Test Like** and **Test Gift** — simulate
+random fake viewers so you can watch blobs spawn/grow/shrink and see
+gift popups + leaderboard updates without being live.
 
-## Testing without being live
-Open `http://localhost:8081/overlay.html` directly in a normal browser
-tab and click the **"Test Gift (+50)"** button in the top-right corner —
-that simulates a gift so you can see the animation and tune the visuals.
-Remove or hide that button (in `overlay.html`) before your real stream
-if you don't want it visible on camera — it's outside the 800x600
-capture area OBS typically frames, but double check.
+## Going live
+1. Go live on TikTok first — the connector needs an active stream to
+   attach to.
+2. Open **PRISM Live Studio** (free, iOS/Android) → My Studio → Widget →
+   Web → paste your overlay URL.
+3. Position it over your camera preview and go live to TikTok from
+   inside PRISM.
 
 ## Tuning the game
-Open `server.js`:
-- `GOAL` — total fuel needed to trigger a launch (currently 1000,
-  roughly diamond-value based, so bigger gifts = more fuel).
-- Gift value uses TikTok's `diamondCount`, so this scales naturally
-  with gift price without you needing to map every gift manually.
+All the knobs are in the `CONFIG` object at the top of `server.js`:
+- `GROWTH_PER_LIKE` — how much a blob grows per like
+- `DECAY_PER_SEC` — how fast a blob shrinks when the person stops liking
+- `GIFT_ENERGY_PER_DIAMOND` — how big a boost gifts give (relative to
+  their diamond value)
+- `MIN_RADIUS` / `MAX_RADIUS` — smallest/largest a territory can get
+- `LEADERBOARD_SIZE` — how many names show on each leaderboard
 
-Open `public/overlay.html` to restyle: colors, rocket emoji/image,
-bar shape, confetti, launch banner text, etc. It's plain HTML/CSS/JS —
-no build step.
+Visuals (colors, fonts, card styling, map background) are all in
+`public/overlay.html` — plain HTML/CSS/canvas, no build step.
 
-## Notes & limits
+## The "proof" record
+Every like and gift is logged with a timestamp in memory and available
+as JSON at:
+```
+https://your-app.onrender.com/log
+```
+Open that URL any time during or after a stream to see the full event
+history — who gifted what, and when.
+
+## Notes
 - This uses an **unofficial** connector that reads public live-stream
-  data — it's the standard approach TikTok streamers use for chat/gift
-  overlays, but it isn't an official TikTok API, so behavior can change
-  if TikTok changes their site. If it stops connecting, check for a
-  newer version of `tiktok-live-connector` (`npm update`).
-- Your TikTok account must be live and gifting-eligible for gifts to fire.
-- Everything runs locally — nothing is deployed or hosted, so it's free.
-
-## Next steps if you want to extend it
-- Different gift types could trigger different effects (e.g. a
-  "Universe" gift instantly fills the bar).
-- A leaderboard of top gifters this stream.
-- Multiple rounds with increasing goals.
-- Sound effects on launch (just drop an audio tag in overlay.html).
-
-Ask me for any of these — the code is small and easy to extend.
+  data — the standard approach TikTok streamers use for these kinds of
+  overlays, not an official TikTok API. If it stops connecting, check
+  for a newer version (`npm update`).
+- Profile picture support depends on exactly which fields TikTok sends
+  in the live event for your account/region — the code tries several
+  common field names and falls back to a colored initial if none are
+  found. If pictures aren't showing up once you're live, send me a
+  screenshot and I can adjust the field lookup.
+- Free hosting (Render free tier) sleeps after 15 minutes idle — use
+  UptimeRobot (free) to ping `/overlay.html` every 5 minutes during your
+  stream window to keep it alive.
