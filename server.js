@@ -1,5 +1,3 @@
-// GIFT-GAME — Kingdom Territory Game
-
 const path = require("path");
 const express = require("express");
 const http = require("http");
@@ -22,16 +20,14 @@ const TIKTOK_USERNAME =
 // FRONTEND
 // =====================================================
 
-// IMPORTANT:
-// "Public" is a FILE containing the game's HTML.
-// It is NOT a folder.
+// The repository contains the game HTML as:
+// Public
+//
+// It is a FILE, not a folder.
 const GAME_FILE = path.join(__dirname, "Public");
 
 app.use(express.json());
 
-// Open the game at:
-// /
-// /overlay.html
 app.get("/", (req, res) => {
   res.sendFile(GAME_FILE);
 });
@@ -138,14 +134,10 @@ function getOrCreateBlob(
       uniqueId,
       nickname: nickname || uniqueId,
       avatarUrl: avatarUrl || null,
-
       color: nextColor(),
-
       energy: 0,
-
       x: spawn.x,
       y: spawn.y,
-
       lastGiftAt: 0
     };
 
@@ -206,10 +198,8 @@ function mapSnapshot() {
       color: blob.color,
       x: blob.x,
       y: blob.y,
-
       radius:
         radiusForEnergy(blob.energy),
-
       recentlyGifted:
         Date.now() -
           blob.lastGiftAt <
@@ -282,17 +272,14 @@ const TEST_GIFTS = [
     name: "Rose",
     diamonds: 1
   },
-
   {
     name: "Heart",
     diamonds: 5
   },
-
   {
     name: "GG",
     diamonds: 25
   },
-
   {
     name: "Galaxy",
     diamonds: 1000
@@ -331,9 +318,9 @@ io.on("connection", socket => {
     }
   );
 
-  // -----------------------------
+  // ===================================================
   // TEST LIKE
-  // -----------------------------
+  // ===================================================
 
   socket.on(
     "manual-test-like",
@@ -397,9 +384,9 @@ io.on("connection", socket => {
     }
   );
 
-  // -----------------------------
+  // ===================================================
   // TEST GIFT
-  // -----------------------------
+  // ===================================================
 
   socket.on(
     "manual-test-gift",
@@ -510,14 +497,13 @@ let tiktok = null;
 let reconnectTimer = null;
 
 async function connectToTikTok() {
-  // Do not attempt TikTok if no username is configured.
   if (
     !TIKTOK_USERNAME ||
     TIKTOK_USERNAME ===
       "YOUR_TIKTOK_USERNAME"
   ) {
     console.log(
-      "TikTok disabled."
+      "TikTok disabled — no username configured."
     );
 
     return;
@@ -530,9 +516,9 @@ async function connectToTikTok() {
         {}
       );
 
-    // -----------------------------
+    // =================================================
     // LIKES
-    // -----------------------------
+    // =================================================
 
     tiktok.on(
       WebcastEvent.LIKE,
@@ -601,9 +587,9 @@ async function connectToTikTok() {
       }
     );
 
-    // -----------------------------
+    // =================================================
     // GIFTS
-    // -----------------------------
+    // =================================================
 
     tiktok.on(
       WebcastEvent.GIFT,
@@ -702,9 +688,9 @@ async function connectToTikTok() {
       }
     );
 
-    // -----------------------------
-    // CONNECTION
-    // -----------------------------
+    // =================================================
+    // CONNECTION EVENTS
+    // =================================================
 
     tiktok.on(
       ControlEvent.CONNECTED,
@@ -765,7 +751,6 @@ function scheduleTikTokReconnect() {
     setTimeout(
       () => {
         reconnectTimer = null;
-
         connectToTikTok();
       },
       15000
@@ -781,7 +766,7 @@ server.listen(
   () => {
     console.log("");
     console.log(
-      "🏰 KINGDOM TERRITORY GAME IS RUNNING"
+      "🏰 GIFT GAME IS RUNNING"
     );
 
     console.log(
@@ -798,8 +783,8 @@ server.listen(
 
     console.log("");
 
-    // IMPORTANT:
-    // The game starts even when TikTok is unavailable.
+    // TikTok is optional.
+    // The game MUST start without TikTok.
     connectToTikTok();
   }
 );
