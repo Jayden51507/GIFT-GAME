@@ -2650,7 +2650,18 @@ function animate(
 requestAnimationFrame(
   animate
 );
+const testToggle =
+  document.getElementById("testToggle");
 
+const testPanel =
+  document.getElementById("testPanel");
+
+testToggle.addEventListener(
+  "click",
+  () => {
+    testPanel.classList.toggle("open");
+  }
+);
 </script>
 
 </body>
