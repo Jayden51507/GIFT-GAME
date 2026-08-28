@@ -1067,7 +1067,7 @@ body {
   <!-- =============================================
        TEST PANEL
        ============================================= -->
-
+<button id="testToggle">🧪</button>
   <div id="testPanel">
 
     <div class="test-title">
