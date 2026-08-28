@@ -1,13 +1,18 @@
 {
-  "name": "tiktok-gift-game",
+  "name": "gift-game",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "TikTok Live Gift Territory Game",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "tiktok",
+    "game",
+    "socket.io",
+    "gift-game"
+  ],
+  "author": "Jayden Beck",
   "license": "ISC",
   "dependencies": {
     "express": "^5.2.1",
