@@ -1553,50 +1553,164 @@ socket.on(
 /* =============================================
    HEROES
 ============================================= */
-
 function renderHeroes() {
 
   const container =
-    document.getElementById(
-      "heroes"
-    );
+    document.getElementById("heroes");
 
   container.innerHTML = "";
 
   const heroes =
     state.heroes || [];
 
+  const classes = [
+    {
+      icon: "⚔️",
+      name: "WARRIOR"
+    },
+    {
+      icon: "🥷",
+      name: "ASSASSIN"
+    },
+    {
+      icon: "🔮",
+      name: "MAGE"
+    },
+    {
+      icon: "🔥",
+      name: "BERSERKER"
+    },
+    {
+      icon: "🤖",
+      name: "CYBER"
+    }
+  ];
+
   for (let i = 0; i < 5; i++) {
 
     const hero =
       heroes[i];
 
+    const role =
+      classes[i];
+
     if (!hero) {
 
       container.innerHTML += `
-        <div class="hero-card">
+        <div
+          class="hero-card"
+          style="
+            position:relative;
+            opacity:.45;
+            border-style:dashed;
+          "
+        >
+
           <div class="rank">
             ${i + 1}
           </div>
 
-          <div class="avatar">
+          <div
+            class="avatar"
+            style="
+              box-shadow:
+                0 0 8px rgba(0,255,255,.15);
+            "
+          >
             ?
           </div>
 
           <div class="hero-info">
+
             <div class="hero-name">
-              OPEN SLOT
+              ${role.icon} ${role.name}
             </div>
 
             <div class="hero-power">
-              Gift to enter
+              GIFT TO ENTER
             </div>
+
           </div>
+
         </div>
       `;
 
       continue;
     }
+
+    const power =
+      Number(hero.diamonds || 0);
+
+    container.innerHTML += `
+      <div
+        class="hero-card active"
+        style="
+          position:relative;
+          border-color:rgba(0,255,255,.45);
+          box-shadow:
+            0 0 10px rgba(0,255,255,.12),
+            inset 0 0 14px rgba(130,0,255,.12);
+        "
+      >
+
+        <div class="rank">
+          ${hero.rank}
+        </div>
+
+        ${avatarHTML(
+          hero,
+          "avatar"
+        )}
+
+        <div class="hero-info">
+
+          <div
+            class="hero-name"
+            style="
+              display:flex;
+              align-items:center;
+              gap:3px;
+            "
+          >
+            <span>
+              ${role.icon}
+            </span>
+
+            <span>
+              ${escapeHtml(
+                hero.nickname
+              )}
+            </span>
+          </div>
+
+          <div
+            class="hero-power"
+            style="
+              color:#7affff;
+            "
+          >
+            ⚡ ${power.toLocaleString()}
+          </div>
+
+        </div>
+
+        <div
+          style="
+            position:absolute;
+            right:5px;
+            top:4px;
+            font-size:6px;
+            letter-spacing:1px;
+            color:rgba(255,255,255,.35);
+          "
+        >
+          ${role.name}
+        </div>
+
+      </div>
+    `;
+  }
+}
 
     container.innerHTML += `
       <div class="hero-card active">
