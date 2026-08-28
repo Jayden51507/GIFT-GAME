@@ -2,6 +2,7 @@ const path = require("path");
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+
 const {
   TikTokLiveConnection,
   WebcastEvent,
@@ -13,6 +14,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 8081;
+
 const TIKTOK_USERNAME =
   process.env.TIKTOK_USERNAME || "YOUR_TIKTOK_USERNAME";
 
@@ -20,10 +22,6 @@ const TIKTOK_USERNAME =
 // FRONTEND
 // =====================================================
 
-// The repository contains the game HTML as:
-// Public
-//
-// It is a FILE, not a folder.
 const GAME_FILE = path.join(__dirname, "Public");
 
 app.use(express.json());
@@ -39,234 +37,72 @@ app.get("/overlay.html", (req, res) => {
 });
 
 // =====================================================
-// GAME CONFIG
+// CRYPT RAID CONFIG
 // =====================================================
 
 const CONFIG = {
-  MAP_W: 800,
-  MAP_H: 600,
+  BOSS_MAX_HP: 100000,
 
-  MIN_RADIUS: 22,
-  MAX_RADIUS: 130,
+  TICK_MS: 500,
 
-  GROWTH_PER_LIKE: 2.2,
-  DECAY_PER_SEC: 3.5,
+  HERO_COUNT: 5,
 
-  TICK_MS: 200,
-  DESPAWN_BELOW: 1,
+  // Likes don't directly destroy the boss.
+  // They create participation and a raid crowd.
+  LIKE_POWER: 1,
 
-  GIFT_ENERGY_PER_DIAMOND: 5,
+  // Controls how quickly gifted heroes attack.
+  HERO_DAMAGE_MULTIPLIER: 3,
 
-  LEADERBOARD_SIZE: 5,
+  // Maximum number of visible crowd members.
+  MAX_LIKERS: 250,
+
+  // How long a liker remains active.
+  LIKER_ACTIVE_MS: 30000,
+
   LOG_MAX: 500
 };
 
-const PALETTE = [
-  "#e63946",
-  "#457b9d",
-  "#2a9d8f",
-  "#f4a261",
-  "#9d4edd",
-  "#ffb703",
-  "#06d6a0",
-  "#ef476f",
-  "#118ab2",
-  "#e76f51"
-];
-
 // =====================================================
-// GAME STATE
+// TEST PLAYERS
 // =====================================================
 
-const blobs = new Map();
-const giftTotals = new Map();
-const likeTotals = new Map();
-const eventLog = [];
-
-let colorCursor = 0;
-
-function nextColor() {
-  const color =
-    PALETTE[colorCursor % PALETTE.length];
-
-  colorCursor++;
-
-  return color;
-}
-
-function randomSpawnPoint() {
-  const pad = CONFIG.MAX_RADIUS * 0.6;
-
-  return {
-    x:
-      pad +
-      Math.random() *
-        (CONFIG.MAP_W - pad * 2),
-
-    y:
-      pad +
-      Math.random() *
-        (CONFIG.MAP_H - pad * 2)
-  };
-}
-
-function extractAvatarUrl(user) {
-  return (
-    user?.avatarThumb?.urlList?.[0] ||
-    user?.avatarThumb?.url_list?.[0] ||
-    user?.avatarMedium?.urlList?.[0] ||
-    user?.avatarLarger?.urlList?.[0] ||
-    user?.profilePicture?.urls?.[0] ||
-    user?.profilePictureUrl ||
-    null
-  );
-}
-
-function getOrCreateBlob(
-  uniqueId,
-  nickname,
-  avatarUrl
-) {
-  let blob = blobs.get(uniqueId);
-
-  if (!blob) {
-    const spawn = randomSpawnPoint();
-
-    blob = {
-      uniqueId,
-      nickname: nickname || uniqueId,
-      avatarUrl: avatarUrl || null,
-      color: nextColor(),
-      energy: 0,
-      x: spawn.x,
-      y: spawn.y,
-      lastGiftAt: 0
-    };
-
-    blobs.set(uniqueId, blob);
-  } else {
-    if (nickname) {
-      blob.nickname = nickname;
-    }
-
-    if (avatarUrl) {
-      blob.avatarUrl = avatarUrl;
-    }
+const TEST_PLAYERS = [
+  {
+    id: "test_jayden",
+    nickname: "Jayden",
+    avatarUrl: null
+  },
+  {
+    id: "test_sarah",
+    nickname: "Sarah",
+    avatarUrl: null
+  },
+  {
+    id: "test_mike",
+    nickname: "Mike",
+    avatarUrl: null
+  },
+  {
+    id: "test_alex",
+    nickname: "Alex",
+    avatarUrl: null
+  },
+  {
+    id: "test_josh",
+    nickname: "Josh",
+    avatarUrl: null
+  },
+  {
+    id: "test_emma",
+    nickname: "Emma",
+    avatarUrl: null
+  },
+  {
+    id: "test_daniel",
+    nickname: "Daniel",
+    avatarUrl: null
   }
-
-  return blob;
-}
-
-function radiusForEnergy(energy) {
-  const radius =
-    CONFIG.MIN_RADIUS +
-    Math.sqrt(Math.max(0, energy)) * 6;
-
-  return Math.min(
-    CONFIG.MAX_RADIUS,
-    radius
-  );
-}
-
-function pushLog(entry) {
-  eventLog.push({
-    ...entry,
-    ts: Date.now()
-  });
-
-  if (eventLog.length > CONFIG.LOG_MAX) {
-    eventLog.shift();
-  }
-}
-
-function topN(map, key, n) {
-  return [...map.entries()]
-    .map(([uniqueId, value]) => ({
-      uniqueId,
-      ...value
-    }))
-    .sort(
-      (a, b) => b[key] - a[key]
-    )
-    .slice(0, n);
-}
-
-function mapSnapshot() {
-  return [...blobs.values()].map(
-    blob => ({
-      uniqueId: blob.uniqueId,
-      nickname: blob.nickname,
-      avatarUrl: blob.avatarUrl,
-      color: blob.color,
-      x: blob.x,
-      y: blob.y,
-      radius:
-        radiusForEnergy(blob.energy),
-      recentlyGifted:
-        Date.now() -
-          blob.lastGiftAt <
-        3000
-    })
-  );
-}
-
-function broadcastLeaderboard() {
-  io.emit("leaderboard", {
-    topGifters: topN(
-      giftTotals,
-      "diamonds",
-      CONFIG.LEADERBOARD_SIZE
-    ),
-
-    topLikers: topN(
-      likeTotals,
-      "likes",
-      CONFIG.LEADERBOARD_SIZE
-    )
-  });
-}
-
-// =====================================================
-// GAME LOOP
-// =====================================================
-
-setInterval(() => {
-  const decay =
-    CONFIG.DECAY_PER_SEC *
-    (CONFIG.TICK_MS / 1000);
-
-  for (const [uniqueId, blob] of blobs) {
-    blob.energy = Math.max(
-      0,
-      blob.energy - decay
-    );
-
-    if (
-      blob.energy <
-      CONFIG.DESPAWN_BELOW
-    ) {
-      blobs.delete(uniqueId);
-    }
-  }
-
-  io.emit(
-    "map",
-    mapSnapshot()
-  );
-}, CONFIG.TICK_MS);
-
-// =====================================================
-// TEST DATA
-// =====================================================
-
-const TEST_NAMES = [
-  "Skywalker22",
-  "DragonQueen",
-  "PixelPete",
-  "MoonlitFox",
-  "BardOfNorth",
-  "RubyRaven",
-  "ThornKnight"
 ];
 
 const TEST_GIFTS = [
@@ -289,6 +125,475 @@ const TEST_GIFTS = [
 ];
 
 // =====================================================
+// GAME STATE
+// =====================================================
+
+let roundNumber = 1;
+
+const boss = {
+  name: "CRYPT Creature",
+  maxHp: CONFIG.BOSS_MAX_HP,
+  hp: CONFIG.BOSS_MAX_HP,
+  phase: 1,
+  defeated: false
+};
+
+// All people who have gifted.
+const players = new Map();
+
+// All people who have liked.
+const likers = new Map();
+
+const eventLog = [];
+
+// =====================================================
+// UTILITIES
+// =====================================================
+
+function pushLog(entry) {
+  eventLog.push({
+    ...entry,
+    ts: Date.now()
+  });
+
+  if (eventLog.length > CONFIG.LOG_MAX) {
+    eventLog.shift();
+  }
+}
+
+function extractAvatarUrl(user) {
+  return (
+    user?.avatarThumb?.urlList?.[0] ||
+    user?.avatarThumb?.url_list?.[0] ||
+    user?.avatarMedium?.urlList?.[0] ||
+    user?.avatarLarger?.urlList?.[0] ||
+    user?.profilePicture?.urls?.[0] ||
+    user?.profilePictureUrl ||
+    null
+  );
+}
+
+function getOrCreatePlayer(
+  uniqueId,
+  nickname,
+  avatarUrl
+) {
+  let player = players.get(uniqueId);
+
+  if (!player) {
+    player = {
+      uniqueId,
+      nickname: nickname || uniqueId,
+      avatarUrl: avatarUrl || null,
+
+      diamonds: 0,
+
+      likes: 0,
+
+      createdAt: Date.now(),
+
+      lastGiftAt: 0,
+
+      lastLikeAt: 0
+    };
+
+    players.set(uniqueId, player);
+  }
+
+  if (nickname) {
+    player.nickname = nickname;
+  }
+
+  if (avatarUrl) {
+    player.avatarUrl = avatarUrl;
+  }
+
+  return player;
+}
+
+function getTopGifters() {
+  return [...players.values()]
+    .sort((a, b) => b.diamonds - a.diamonds)
+    .slice(0, CONFIG.HERO_COUNT)
+    .map((player, index) => ({
+      uniqueId: player.uniqueId,
+      nickname: player.nickname,
+      avatarUrl: player.avatarUrl,
+      diamonds: player.diamonds,
+      likes: player.likes,
+      rank: index + 1,
+
+      // Used by the frontend to determine attack strength.
+      power: Math.max(1, player.diamonds),
+
+      recentlyGifted:
+        Date.now() - player.lastGiftAt < 3000
+    }));
+}
+
+function getActiveLikers() {
+  const now = Date.now();
+
+  return [...likers.values()]
+    .filter(
+      liker =>
+        now - liker.lastLikeAt <
+        CONFIG.LIKER_ACTIVE_MS
+    )
+    .sort(
+      (a, b) =>
+        b.lastLikeAt - a.lastLikeAt
+    )
+    .slice(0, CONFIG.MAX_LIKERS)
+    .map(liker => ({
+      uniqueId: liker.uniqueId,
+      nickname: liker.nickname,
+      avatarUrl: liker.avatarUrl,
+      likes: liker.likes
+    }));
+}
+
+function getBossPhase() {
+  const percent =
+    boss.hp / boss.maxHp;
+
+  if (percent <= 0.25) {
+    return 4;
+  }
+
+  if (percent <= 0.5) {
+    return 3;
+  }
+
+  if (percent <= 0.75) {
+    return 2;
+  }
+
+  return 1;
+}
+
+function getBossPercent() {
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      (boss.hp / boss.maxHp) * 100
+    )
+  );
+}
+
+function createState() {
+  boss.phase = getBossPhase();
+
+  return {
+    roundNumber,
+
+    boss: {
+      name: boss.name,
+      hp: boss.hp,
+      maxHp: boss.maxHp,
+      percent: getBossPercent(),
+      phase: boss.phase,
+      defeated: boss.defeated
+    },
+
+    heroes: getTopGifters(),
+
+    likers: getActiveLikers(),
+
+    testPlayers: TEST_PLAYERS,
+
+    timestamp: Date.now()
+  };
+}
+
+function broadcastState() {
+  io.emit(
+    "raid-state",
+    createState()
+  );
+}
+
+function damageBoss(
+  amount,
+  attacker = null
+) {
+  if (boss.defeated) {
+    return;
+  }
+
+  const damage = Math.max(
+    1,
+    Math.floor(amount)
+  );
+
+  boss.hp = Math.max(
+    0,
+    boss.hp - damage
+  );
+
+  const oldPhase = boss.phase;
+
+  boss.phase = getBossPhase();
+
+  io.emit("boss-hit", {
+    damage,
+    attacker,
+    hp: boss.hp,
+    maxHp: boss.maxHp,
+    percent: getBossPercent(),
+    phase: boss.phase
+  });
+
+  if (boss.phase !== oldPhase) {
+    io.emit("boss-phase", {
+      phase: boss.phase
+    });
+
+    pushLog({
+      type: "boss-phase",
+      phase: boss.phase
+    });
+  }
+
+  if (boss.hp <= 0) {
+    defeatBoss();
+  }
+}
+
+function defeatBoss() {
+  if (boss.defeated) {
+    return;
+  }
+
+  boss.defeated = true;
+  boss.hp = 0;
+
+  io.emit("boss-defeated", {
+    roundNumber,
+    heroes: getTopGifters()
+  });
+
+  pushLog({
+    type: "boss-defeated",
+    roundNumber
+  });
+
+  // New boss after a short celebration.
+  setTimeout(() => {
+    startNewRound();
+  }, 5000);
+}
+
+function startNewRound() {
+  roundNumber++;
+
+  boss.hp = boss.maxHp;
+  boss.phase = 1;
+  boss.defeated = false;
+
+  io.emit("new-round", {
+    roundNumber,
+    boss: {
+      name: boss.name,
+      hp: boss.hp,
+      maxHp: boss.maxHp,
+      phase: boss.phase
+    }
+  });
+
+  pushLog({
+    type: "new-round",
+    roundNumber
+  });
+
+  broadcastState();
+}
+
+// =====================================================
+// HERO ATTACK LOOP
+// =====================================================
+
+setInterval(() => {
+  if (boss.defeated) {
+    return;
+  }
+
+  const heroes = getTopGifters();
+
+  for (const hero of heroes) {
+    if (hero.diamonds <= 0) {
+      continue;
+    }
+
+    /*
+      Very simple damage formula.
+
+      More gifted diamonds =
+      more hero power =
+      more damage.
+    */
+
+    const damage =
+      Math.max(
+        1,
+        Math.floor(
+          Math.sqrt(hero.diamonds) *
+            CONFIG.HERO_DAMAGE_MULTIPLIER
+        )
+      );
+
+    damageBoss(
+      damage,
+      {
+        uniqueId: hero.uniqueId,
+        nickname: hero.nickname,
+        rank: hero.rank,
+        avatarUrl: hero.avatarUrl
+      }
+    );
+
+    io.emit("hero-attack", {
+      uniqueId: hero.uniqueId,
+      nickname: hero.nickname,
+      rank: hero.rank,
+      avatarUrl: hero.avatarUrl,
+      damage
+    });
+
+    if (boss.defeated) {
+      break;
+    }
+  }
+}, CONFIG.TICK_MS);
+
+// =====================================================
+// LIKE HANDLER
+// =====================================================
+
+function processLike({
+  uniqueId,
+  nickname,
+  avatarUrl,
+  likeCount
+}) {
+  const player =
+    getOrCreatePlayer(
+      uniqueId,
+      nickname,
+      avatarUrl
+    );
+
+  const amount =
+    Math.max(
+      1,
+      Number(likeCount) || 1
+    );
+
+  player.likes += amount;
+  player.lastLikeAt = Date.now();
+
+  likers.set(uniqueId, {
+    uniqueId,
+    nickname: player.nickname,
+    avatarUrl: player.avatarUrl,
+    likes: player.likes,
+    lastLikeAt: Date.now()
+  });
+
+  pushLog({
+    type: "like",
+    uniqueId,
+    nickname: player.nickname,
+    value: amount
+  });
+
+  io.emit("like-event", {
+    uniqueId,
+    nickname: player.nickname,
+    avatarUrl: player.avatarUrl,
+    likes: player.likes,
+    value: amount
+  });
+
+  broadcastState();
+}
+
+// =====================================================
+// GIFT HANDLER
+// =====================================================
+
+function processGift({
+  uniqueId,
+  nickname,
+  avatarUrl,
+  giftName,
+  diamonds,
+  repeatCount
+}) {
+  const player =
+    getOrCreatePlayer(
+      uniqueId,
+      nickname,
+      avatarUrl
+    );
+
+  const value =
+    Math.max(
+      1,
+      Number(diamonds) || 1
+    );
+
+  player.diamonds += value;
+
+  player.lastGiftAt =
+    Date.now();
+
+  pushLog({
+    type: "gift",
+
+    uniqueId,
+
+    nickname: player.nickname,
+
+    giftName:
+      giftName || "Gift",
+
+    value,
+
+    repeatCount:
+      repeatCount || 1
+  });
+
+  io.emit("gift-event", {
+    uniqueId,
+    nickname: player.nickname,
+    avatarUrl: player.avatarUrl,
+
+    giftName:
+      giftName || "Gift",
+
+    value,
+
+    repeatCount:
+      repeatCount || 1
+  });
+
+  /*
+    Important:
+
+    The gift itself does NOT instantly destroy
+    the boss.
+
+    Instead it increases the hero's power.
+
+    The hero then attacks automatically.
+  */
+
+  broadcastState();
+}
+
+// =====================================================
 // SOCKET.IO
 // =====================================================
 
@@ -298,26 +603,10 @@ io.on("connection", socket => {
     socket.id
   );
 
+  // Send current state immediately.
   socket.emit(
-    "map",
-    mapSnapshot()
-  );
-
-  socket.emit(
-    "leaderboard",
-    {
-      topGifters: topN(
-        giftTotals,
-        "diamonds",
-        CONFIG.LEADERBOARD_SIZE
-      ),
-
-      topLikers: topN(
-        likeTotals,
-        "likes",
-        CONFIG.LEADERBOARD_SIZE
-      )
-    }
+    "raid-state",
+    createState()
   );
 
   // ===================================================
@@ -326,62 +615,45 @@ io.on("connection", socket => {
 
   socket.on(
     "manual-test-like",
-    () => {
-      const name =
-        TEST_NAMES[
-          Math.floor(
-            Math.random() *
-              TEST_NAMES.length
-          )
-        ];
+    payload => {
+      let testPlayer;
 
-      const uniqueId =
-        "test_" + name;
+      if (
+        payload &&
+        payload.playerId
+      ) {
+        testPlayer =
+          TEST_PLAYERS.find(
+            player =>
+              player.id ===
+              payload.playerId
+          );
+      }
 
-      const blob =
-        getOrCreateBlob(
-          uniqueId,
-          name,
-          null
-        );
+      // If no player was specified,
+      // use the first test player.
+      if (!testPlayer) {
+        testPlayer =
+          TEST_PLAYERS[0];
+      }
 
-      blob.energy +=
-        5 *
-        CONFIG.GROWTH_PER_LIKE;
+      processLike({
+        uniqueId:
+          testPlayer.id,
 
-      const totals =
-        likeTotals.get(
-          uniqueId
-        ) || {
-          nickname: name,
-          avatarUrl: null,
-          likes: 0
-        };
+        nickname:
+          testPlayer.nickname,
 
-      totals.likes += 5;
+        avatarUrl:
+          testPlayer.avatarUrl,
 
-      likeTotals.set(
-        uniqueId,
-        totals
-      );
-
-      pushLog({
-        type: "like",
-        uniqueId,
-        nickname: name,
-        value: 5
+        likeCount:
+          payload?.amount || 1
       });
-
-      broadcastLeaderboard();
-
-      io.emit(
-        "map",
-        mapSnapshot()
-      );
 
       console.log(
         "TEST LIKE:",
-        name
+        testPlayer.nickname
       );
     }
   );
@@ -392,89 +664,92 @@ io.on("connection", socket => {
 
   socket.on(
     "manual-test-gift",
-    () => {
-      const name =
-        TEST_NAMES[
-          Math.floor(
-            Math.random() *
-              TEST_NAMES.length
-          )
-        ];
+    payload => {
+      let testPlayer;
 
-      const uniqueId =
-        "test_" + name;
+      if (
+        payload &&
+        payload.playerId
+      ) {
+        testPlayer =
+          TEST_PLAYERS.find(
+            player =>
+              player.id ===
+              payload.playerId
+          );
+      }
+
+      if (!testPlayer) {
+        testPlayer =
+          TEST_PLAYERS[0];
+      }
 
       const gift =
-        TEST_GIFTS[
-          Math.floor(
-            Math.random() *
-              TEST_GIFTS.length
-          )
-        ];
+        payload?.gift || null;
 
-      const blob =
-        getOrCreateBlob(
-          uniqueId,
-          name,
-          null
-        );
+      const diamonds =
+        payload?.diamonds ||
+        gift?.diamonds ||
+        1;
 
-      blob.energy +=
-        gift.diamonds *
-        CONFIG.GIFT_ENERGY_PER_DIAMOND;
+      const giftName =
+        payload?.giftName ||
+        gift?.name ||
+        "Rose";
 
-      blob.lastGiftAt =
-        Date.now();
+      processGift({
+        uniqueId:
+          testPlayer.id,
 
-      const totals =
-        giftTotals.get(
-          uniqueId
-        ) || {
-          nickname: name,
-          avatarUrl: null,
-          diamonds: 0
-        };
+        nickname:
+          testPlayer.nickname,
 
-      totals.diamonds +=
-        gift.diamonds;
+        avatarUrl:
+          testPlayer.avatarUrl,
 
-      giftTotals.set(
-        uniqueId,
-        totals
-      );
+        giftName,
 
-      pushLog({
-        type: "gift",
-        uniqueId,
-        nickname: name,
-        value: gift.diamonds,
-        giftName: gift.name,
+        diamonds,
+
         repeatCount: 1
       });
 
-      io.emit(
-        "gift-popup",
-        {
-          uniqueId,
-          nickname: name,
-          avatarUrl: null,
-          giftName: gift.name,
-          value: gift.diamonds,
-          repeatCount: 1
-        }
-      );
-
-      broadcastLeaderboard();
-
-      io.emit(
-        "map",
-        mapSnapshot()
-      );
-
       console.log(
         "TEST GIFT:",
-        name,
-        gift.name
+        testPlayer.nickname,
+        giftName,
+        diamonds
+      );
+    }
+  );
+
+  // ===================================================
+  // TEST RESET
+  // ===================================================
+
+  socket.on(
+    "manual-test-reset",
+    () => {
+      players.clear();
+      likers.clear();
+
+      roundNumber = 1;
+
+      boss.hp =
+        boss.maxHp;
+
+      boss.phase = 1;
+
+      boss.defeated = false;
+
+      io.emit(
+        "raid-reset"
+      );
+
+      broadcastState();
+
+      console.log(
+        "TEST RAID RESET"
       );
     }
   );
@@ -488,6 +763,28 @@ app.get(
   "/log",
   (req, res) => {
     res.json(eventLog);
+  }
+);
+
+// =====================================================
+// TEST API
+// =====================================================
+
+app.get(
+  "/test/players",
+  (req, res) => {
+    res.json(
+      TEST_PLAYERS
+    );
+  }
+);
+
+app.get(
+  "/test/state",
+  (req, res) => {
+    res.json(
+      createState()
+    );
   }
 );
 
@@ -519,7 +816,7 @@ async function connectToTikTok() {
       );
 
     // =================================================
-    // LIKES
+    // REAL LIKES
     // =================================================
 
     tiktok.on(
@@ -542,60 +839,29 @@ async function connectToTikTok() {
         const likeCount =
           data.likeCount || 1;
 
-        const blob =
-          getOrCreateBlob(
-            uniqueId,
-            nickname,
-            avatarUrl
-          );
-
-        blob.energy +=
-          likeCount *
-          CONFIG.GROWTH_PER_LIKE;
-
-        const totals =
-          likeTotals.get(
-            uniqueId
-          ) || {
-            nickname,
-            avatarUrl,
-            likes: 0
-          };
-
-        totals.likes +=
-          likeCount;
-
-        totals.nickname =
-          nickname;
-
-        if (avatarUrl) {
-          totals.avatarUrl =
-            avatarUrl;
-        }
-
-        likeTotals.set(
-          uniqueId,
-          totals
-        );
-
-        pushLog({
-          type: "like",
+        processLike({
           uniqueId,
           nickname,
-          value: likeCount
+          avatarUrl,
+          likeCount
         });
-
-        broadcastLeaderboard();
       }
     );
 
     // =================================================
-    // GIFTS
+    // REAL GIFTS
     // =================================================
 
     tiktok.on(
       WebcastEvent.GIFT,
       data => {
+        /*
+          TikTok can send intermediate events for
+          streakable gifts.
+
+          We only process the final event.
+        */
+
         if (
           data.giftType === 1 &&
           !data.repeatEnd
@@ -621,77 +887,26 @@ async function connectToTikTok() {
           (data.diamondCount || 1) *
           (data.repeatCount || 1);
 
-        const blob =
-          getOrCreateBlob(
-            uniqueId,
-            nickname,
-            avatarUrl
-          );
-
-        blob.energy +=
-          diamondValue *
-          CONFIG.GIFT_ENERGY_PER_DIAMOND;
-
-        blob.lastGiftAt =
-          Date.now();
-
-        const totals =
-          giftTotals.get(
-            uniqueId
-          ) || {
-            nickname,
-            avatarUrl,
-            diamonds: 0
-          };
-
-        totals.diamonds +=
-          diamondValue;
-
-        totals.nickname =
-          nickname;
-
-        if (avatarUrl) {
-          totals.avatarUrl =
-            avatarUrl;
-        }
-
-        giftTotals.set(
-          uniqueId,
-          totals
-        );
-
-        pushLog({
-          type: "gift",
+        processGift({
           uniqueId,
           nickname,
-          value: diamondValue,
+          avatarUrl,
+
           giftName:
-            data.giftName,
+            data.giftName ||
+            "Gift",
+
+          diamonds:
+            diamondValue,
+
           repeatCount:
-            data.repeatCount
+            data.repeatCount || 1
         });
-
-        io.emit(
-          "gift-popup",
-          {
-            uniqueId,
-            nickname,
-            avatarUrl,
-            giftName:
-              data.giftName,
-            value:
-              diamondValue,
-            repeatCount:
-              data.repeatCount
-          }
-        );
-
-        broadcastLeaderboard();
       }
     );
 
     // =================================================
-    // CONNECTION EVENTS
+    // CONNECTION
     // =================================================
 
     tiktok.on(
@@ -753,6 +968,7 @@ function scheduleTikTokReconnect() {
     setTimeout(
       () => {
         reconnectTimer = null;
+
         connectToTikTok();
       },
       15000
@@ -767,8 +983,9 @@ server.listen(
   PORT,
   () => {
     console.log("");
+
     console.log(
-      "🏰 GIFT GAME IS RUNNING"
+      "⚡ CRYPT RAID IS RUNNING"
     );
 
     console.log(
@@ -780,13 +997,11 @@ server.listen(
     );
 
     console.log(
-      `Log: http://localhost:${PORT}/log`
+      `State: http://localhost:${PORT}/test/state`
     );
 
     console.log("");
 
-    // TikTok is optional.
-    // The game MUST start without TikTok.
     connectToTikTok();
   }
 );
