@@ -1,7 +1,7 @@
 {
   "name": "gift-game",
   "version": "1.0.0",
-  "description": "TikTok Live Gift Territory Game",
+  "description": "Kingdom Territory TikTok Live Game",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -10,9 +10,9 @@
     "tiktok",
     "game",
     "socket.io",
-    "gift-game"
+    "overlay"
   ],
-  "author": "Jayden Beck",
+  "author": "Jayden51507",
   "license": "ISC",
   "dependencies": {
     "express": "^5.2.1",
