@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1.0,viewport-fit=cover"
+>
 <title>CRYPT RAID</title>
 
-<style>* {
+<style>
+* {
   box-sizing: border-box;
 }
 
@@ -19,14 +23,23 @@ body {
   background: #020307;
   color: white;
   font-family: Arial, Helvetica, sans-serif;
+  overscroll-behavior: none;
+}
+
+button {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #game {
   position: relative;
   width: 100vw;
+  width: 100dvw;
   height: 100vh;
+  height: 100dvh;
   min-height: 480px;
   overflow: hidden;
+
   background:
     radial-gradient(
       circle at 67% 43%,
@@ -93,10 +106,13 @@ body {
 
 .header {
   position: absolute;
-  top: 14px;
+  top: max(10px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;
+
+  width: max-content;
+  max-width: 70vw;
 
   text-align: center;
   pointer-events: none;
@@ -106,6 +122,8 @@ body {
   font-size: clamp(19px, 3vw, 28px);
   font-weight: 1000;
   letter-spacing: 4px;
+
+  white-space: nowrap;
 
   text-shadow:
     0 0 8px #00ffff,
@@ -129,8 +147,8 @@ body {
 
 #round {
   position: absolute;
-  top: 16px;
-  right: 18px;
+  top: max(11px, env(safe-area-inset-top));
+  right: 12px;
 
   z-index: 30;
 
@@ -146,6 +164,8 @@ body {
   font-size: 8px;
   font-weight: 900;
   letter-spacing: 2px;
+
+  display: none;
 }
 
 /* =========================
@@ -237,7 +257,12 @@ body {
   position: absolute;
   inset: 0;
 
+  width: 100%;
+  height: 100%;
+
   z-index: 3;
+
+  pointer-events: none;
 }
 
 /* =========================
@@ -297,8 +322,7 @@ body {
 }
 
 .hero-card.active {
-  border-color:
-    rgba(0,255,255,.5);
+  border-color: rgba(0,255,255,.5);
 
   box-shadow:
     0 0 9px rgba(0,255,255,.14),
@@ -307,6 +331,8 @@ body {
 
 .rank {
   width: 12px;
+
+  flex: 0 0 12px;
 
   font-size: 8px;
   font-weight: 900;
@@ -339,12 +365,14 @@ body {
 
   font-size: 9px;
   font-weight: 900;
+
+  box-shadow:
+    0 0 8px rgba(0,255,255,.2);
 }
 
 .avatar img {
   width: 100%;
   height: 100%;
-
   object-fit: cover;
 }
 
@@ -402,8 +430,7 @@ body {
   box-shadow:
     0 0 10px rgba(0,255,255,.06);
 
-  animation:
-    eventIn .25s ease-out;
+  animation: eventIn .25s ease-out;
 
   font-size: 8px;
 
@@ -488,6 +515,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  flex: 0 0 auto;
 
   border-radius: 50%;
 
@@ -747,8 +776,8 @@ body {
 #testToggle {
   position: absolute;
 
-  left: 12px;
-  bottom: 12px;
+  left: max(10px, env(safe-area-inset-left));
+  bottom: max(10px, env(safe-area-inset-bottom));
 
   z-index: 250;
 
@@ -760,7 +789,7 @@ body {
   border-radius: 50%;
 
   background:
-    rgba(2,7,15,.9);
+    rgba(2,7,15,.92);
 
   color: white;
 
@@ -770,11 +799,34 @@ body {
     0 0 15px rgba(0,255,255,.15);
 
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  touch-action: manipulation;
+
+  transition:
+    transform .15s ease,
+    background .15s ease,
+    box-shadow .15s ease;
 }
 
 #testToggle:hover {
   background:
     rgba(0,255,255,.15);
+}
+
+#testToggle:active {
+  transform: scale(.92);
+}
+
+#testToggle.open {
+  background:
+    rgba(0,255,255,.18);
+
+  box-shadow:
+    0 0 20px rgba(0,255,255,.3);
 }
 
 /* =========================
@@ -784,8 +836,10 @@ body {
 #testPanel {
   position: absolute;
 
-  left: 12px;
-  bottom: 62px;
+  left: max(10px, env(safe-area-inset-left));
+  bottom: calc(
+    max(10px, env(safe-area-inset-bottom)) + 52px
+  );
 
   z-index: 240;
 
@@ -806,16 +860,19 @@ body {
   border-radius: 11px;
 
   background:
-    rgba(1,5,12,.96);
+    rgba(1,5,12,.97);
 
   box-shadow:
     0 0 25px rgba(0,255,255,.12);
+
+  transform: translateY(8px);
 
   transition:
     max-height .3s ease,
     opacity .2s ease,
     padding .3s ease,
-    border-color .3s ease;
+    border-color .3s ease,
+    transform .3s ease;
 }
 
 #testPanel.open {
@@ -829,6 +886,8 @@ body {
 
   border-color:
     rgba(0,255,255,.3);
+
+  transform: translateY(0);
 }
 
 .test-title {
@@ -846,7 +905,7 @@ body {
   display: grid;
 
   grid-template-columns:
-    1fr 35px 44px 50px;
+    minmax(0,1fr) 35px 44px 50px;
 
   gap: 3px;
 
@@ -856,6 +915,8 @@ body {
 }
 
 .test-name {
+  min-width: 0;
+
   font-size: 8px;
 
   overflow: hidden;
@@ -882,6 +943,13 @@ body {
   padding: 5px 2px;
 
   cursor: pointer;
+
+  touch-action: manipulation;
+}
+
+.test-row button:active,
+#reset:active {
+  transform: scale(.96);
 }
 
 .test-row button:hover,
@@ -911,22 +979,40 @@ body {
 @media(max-width:700px) {
 
   .header {
-    top: 10px;
+    top: max(8px, env(safe-area-inset-top));
   }
 
   .logo {
+    font-size: 21px;
     letter-spacing: 3px;
   }
 
+  .subtitle {
+    font-size: 7px;
+    letter-spacing: 2.5px;
+  }
+
   #round {
-    top: 11px;
-    right: 10px;
+    top: max(9px, env(safe-area-inset-top));
+    right: 8px;
   }
 
   .boss-area {
     top: 57px;
 
     width: 55vw;
+
+    min-width: 185px;
+    max-width: 310px;
+  }
+
+  .boss-name {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+  }
+
+  .hp-shell {
+    height: 13px;
   }
 
   .party {
@@ -946,6 +1032,11 @@ body {
     padding: 3px 4px;
 
     gap: 4px;
+  }
+
+  .rank {
+    width: 10px;
+    flex-basis: 10px;
   }
 
   .avatar {
@@ -1000,9 +1091,6 @@ body {
   }
 
   #testToggle {
-    left: 8px;
-    bottom: 8px;
-
     width: 39px;
     height: 39px;
 
@@ -1010,12 +1098,50 @@ body {
   }
 
   #testPanel {
-    left: 8px;
-    bottom: 55px;
+    width: min(235px, calc(100vw - 20px));
+  }
+}
 
-    width: 235px;
+/* =========================
+   VERY SMALL PHONES
+========================= */
+
+@media(max-width:390px) {
+
+  .logo {
+    font-size: 18px;
+    letter-spacing: 2px;
   }
 
+  .boss-area {
+    width: 52vw;
+  }
+
+  .party {
+    width: 112px;
+  }
+
+  .hero-card {
+    min-height: 31px;
+  }
+
+  .avatar {
+    width: 21px;
+    height: 21px;
+    flex-basis: 21px;
+  }
+
+  .hero-name {
+    font-size: 6.5px;
+  }
+
+  .hero-power {
+    font-size: 5.5px;
+  }
+
+  #events {
+    width: 112px;
+  }
 }
 </style>
 </head>
@@ -1064,10 +1190,17 @@ body {
     </div>
   </div>
 
-  <!-- =============================================
-       TEST PANEL
-       ============================================= -->
-<button id="testToggle">🧪</button>
+  <!-- TEST BUTTON -->
+  <button
+    id="testToggle"
+    type="button"
+    aria-label="Open testing panel"
+    aria-expanded="false"
+  >
+    🧪
+  </button>
+
+  <!-- TEST PANEL -->
   <div id="testPanel">
 
     <div class="test-title">
@@ -1076,7 +1209,10 @@ body {
 
     <div id="testPlayers"></div>
 
-    <button id="reset">
+    <button
+      id="reset"
+      type="button"
+    >
       RESET RAID
     </button>
 
@@ -1087,7 +1223,15 @@ body {
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
+/* =============================================
+   SOCKET
+============================================= */
+
 const socket = io();
+
+/* =============================================
+   CANVAS
+============================================= */
 
 const canvas =
   document.getElementById("battle");
@@ -1098,20 +1242,81 @@ const ctx =
 let W = 800;
 let H = 600;
 
+function resize() {
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  const dpr =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+  W = window.innerWidth;
+  H = window.innerHeight;
+
+  canvas.width =
+    Math.floor(W * dpr);
+
+  canvas.height =
+    Math.floor(H * dpr);
+
+  canvas.style.width =
+    W + "px";
+
+  canvas.style.height =
+    H + "px";
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
+}
+
+window.addEventListener(
+  "resize",
+  resize
+);
+
+window.addEventListener(
+  "orientationchange",
+  () => {
+    setTimeout(resize, 100);
+  }
+);
+
+resize();
+
+/* =============================================
+   STATE
+============================================= */
+
 let state = {
   boss: {
     hp: 100000,
     maxHp: 100000,
     phase: 1
   },
+
   heroes: [],
+
   likers: []
 };
 
 let particles = [];
 let attacks = [];
+
 let bossPulse = 0;
 let shake = 0;
+
+/* =============================================
+   TEST PLAYERS
+============================================= */
 
 const TEST_PLAYERS = [
   {
@@ -1144,42 +1349,39 @@ const TEST_PLAYERS = [
   }
 ];
 
-function resize() {
-  W = canvas.width =
-    window.innerWidth;
-
-  H = canvas.height =
-    window.innerHeight;
-}
-
-window.addEventListener(
-  "resize",
-  resize
-);
-
-resize();
-
 /* =============================================
    HELPERS
 ============================================= */
 
 function escapeHtml(value) {
+
   return String(value || "")
-    .replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[char]));
+    .replace(
+      /[&<>"']/g,
+      char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char])
+    );
 }
 
-function avatarHTML(player, className) {
+function avatarHTML(
+  player,
+  className
+) {
+
   if (player.avatarUrl) {
+
     return `
       <div class="${className}">
         <img
-          src="${escapeHtml(player.avatarUrl)}"
+          src="${escapeHtml(
+            player.avatarUrl
+          )}"
+          alt=""
           onerror="this.style.display='none'"
         >
       </div>
@@ -1208,49 +1410,72 @@ function buildTestPanel() {
       "testPlayers"
     );
 
+  if (!container) {
+    return;
+  }
+
   container.innerHTML = "";
 
-  TEST_PLAYERS.forEach(player => {
+  TEST_PLAYERS.forEach(
+    player => {
 
-    const row =
-      document.createElement("div");
+      const row =
+        document.createElement(
+          "div"
+        );
 
-    row.className =
-      "test-row";
+      row.className =
+        "test-row";
 
-    row.innerHTML = `
-      <div class="test-name">
-        ${escapeHtml(
-          player.nickname
-        )}
-      </div>
+      row.innerHTML = `
+        <div class="test-name">
+          ${escapeHtml(
+            player.nickname
+          )}
+        </div>
 
-      <button
-        data-like="${player.id}"
-      >
-        ❤️
-      </button>
+        <button
+          type="button"
+          data-like="${escapeHtml(
+            player.id
+          )}"
+        >
+          ❤️
+        </button>
 
-      <button
-        class="gift-button"
-        data-rose="${player.id}"
-      >
-        🌹
-      </button>
+        <button
+          type="button"
+          class="gift-button"
+          data-rose="${escapeHtml(
+            player.id
+          )}"
+        >
+          🌹
+        </button>
 
-      <button
-        class="gift-button"
-        data-galaxy="${player.id}"
-      >
-        🌌 1K
-      </button>
-    `;
+        <button
+          type="button"
+          class="gift-button"
+          data-galaxy="${escapeHtml(
+            player.id
+          )}"
+        >
+          🌌 1K
+        </button>
+      `;
 
-    container.appendChild(row);
-  });
+      container.appendChild(row);
+    }
+  );
+
+  /*
+    LIKE
+  */
 
   container
-    .querySelectorAll("[data-like]")
+    .querySelectorAll(
+      "[data-like]"
+    )
     .forEach(button => {
 
       button.addEventListener(
@@ -1262,6 +1487,7 @@ function buildTestPanel() {
             {
               playerId:
                 button.dataset.like,
+
               amount: 1
             }
           );
@@ -1271,8 +1497,14 @@ function buildTestPanel() {
 
     });
 
+  /*
+    ROSE
+  */
+
   container
-    .querySelectorAll("[data-rose]")
+    .querySelectorAll(
+      "[data-rose]"
+    )
     .forEach(button => {
 
       button.addEventListener(
@@ -1297,8 +1529,14 @@ function buildTestPanel() {
 
     });
 
+  /*
+    GALAXY
+  */
+
   container
-    .querySelectorAll("[data-galaxy]")
+    .querySelectorAll(
+      "[data-galaxy]"
+    )
     .forEach(button => {
 
       button.addEventListener(
@@ -1322,10 +1560,51 @@ function buildTestPanel() {
       );
 
     });
+}
+
+/* =============================================
+   TEST PANEL TOGGLE
+============================================= */
+
+const testToggle =
+  document.getElementById(
+    "testToggle"
+  );
+
+const testPanel =
+  document.getElementById(
+    "testPanel"
+  );
+
+function toggleTestPanel() {
+
+  const isOpen =
+    testPanel.classList.toggle(
+      "open"
+    );
+
+  testToggle.classList.toggle(
+    "open",
+    isOpen
+  );
+
+  testToggle.setAttribute(
+    "aria-expanded",
+    String(isOpen)
+  );
 
 }
 
+testToggle.addEventListener(
+  "click",
+  toggleTestPanel
+);
+
 buildTestPanel();
+
+/* =============================================
+   RESET
+============================================= */
 
 document
   .getElementById("reset")
@@ -1348,6 +1627,10 @@ socket.on(
   "raid-state",
   newState => {
 
+    if (!newState) {
+      return;
+    }
+
     state = newState;
 
     renderHeroes();
@@ -1368,12 +1651,22 @@ function renderHeroes() {
       "heroes"
     );
 
+  if (!container) {
+    return;
+  }
+
   container.innerHTML = "";
 
   const heroes =
-    state.heroes || [];
+    Array.isArray(state.heroes)
+      ? state.heroes
+      : [];
 
-  for (let i = 0; i < 5; i++) {
+  for (
+    let i = 0;
+    i < 5;
+    i++
+  ) {
 
     const hero =
       heroes[i];
@@ -1382,6 +1675,7 @@ function renderHeroes() {
 
       container.innerHTML += `
         <div class="hero-card">
+
           <div class="rank">
             ${i + 1}
           </div>
@@ -1391,6 +1685,7 @@ function renderHeroes() {
           </div>
 
           <div class="hero-info">
+
             <div class="hero-name">
               OPEN SLOT
             </div>
@@ -1398,18 +1693,25 @@ function renderHeroes() {
             <div class="hero-power">
               Gift to enter
             </div>
+
           </div>
+
         </div>
       `;
 
       continue;
     }
 
+    const diamonds =
+      Number(
+        hero.diamonds || 0
+      );
+
     container.innerHTML += `
       <div class="hero-card active">
 
         <div class="rank">
-          ${hero.rank}
+          ${hero.rank || i + 1}
         </div>
 
         ${avatarHTML(
@@ -1426,7 +1728,7 @@ function renderHeroes() {
           </div>
 
           <div class="hero-power">
-            ⚡ ${hero.diamonds.toLocaleString()}
+            ⚡ ${diamonds.toLocaleString()}
           </div>
 
         </div>
@@ -1447,22 +1749,30 @@ function renderCrowd() {
       "crowd"
     );
 
+  if (!container) {
+    return;
+  }
+
   const likers =
-    state.likers || [];
+    Array.isArray(state.likers)
+      ? state.likers
+      : [];
 
   container.innerHTML = "";
 
   likers
     .slice(0, 80)
-    .forEach(liker => {
+    .forEach(
+      liker => {
 
-      container.innerHTML +=
-        avatarHTML(
-          liker,
-          "crowd-avatar"
-        );
+        container.innerHTML +=
+          avatarHTML(
+            liker,
+            "crowd-avatar"
+          );
 
-    });
+      }
+    );
 }
 
 /* =============================================
@@ -1478,15 +1788,23 @@ function updateHP() {
     return;
   }
 
+  const hp =
+    Number(
+      boss.hp || 0
+    );
+
+  const maxHp =
+    Number(
+      boss.maxHp || 100000
+    );
+
   const percent =
     Math.max(
       0,
       Math.min(
         100,
         boss.percent ??
-        (boss.hp /
-          boss.maxHp) *
-          100
+        (hp / maxHp) * 100
       )
     );
 
@@ -1498,10 +1816,7 @@ function updateHP() {
   document
     .getElementById("hpText")
     .textContent =
-      `${Math.ceil(
-        boss.hp
-      ).toLocaleString()} / ${boss.maxHp.toLocaleString()}`;
-
+      `${Math.ceil(hp).toLocaleString()} / ${maxHp.toLocaleString()}`;
 }
 
 /* =============================================
@@ -1551,11 +1866,20 @@ socket.on(
   event => {
 
     attacks.push({
+
       hero: event,
+
       life: 1,
-      x: Math.random() *
-        W,
-      y: H * .48
+
+      x:
+        W * (
+          .25 +
+          Math.random() * .5
+        ),
+
+      y:
+        H * .68
+
     });
 
     bossPulse =
@@ -1582,7 +1906,9 @@ socket.on(
       );
 
     showDamage(
-      event.damage
+      Number(
+        event?.damage || 0
+      )
     );
 
   }
@@ -1636,6 +1962,10 @@ socket.on(
   }
 );
 
+/* =============================================
+   NEW ROUND
+============================================= */
+
 socket.on(
   "new-round",
   () => {
@@ -1648,13 +1978,20 @@ socket.on(
         "show"
       );
 
-    state.boss.hp =
-      state.boss.maxHp;
+    if (state.boss) {
+
+      state.boss.hp =
+        state.boss.maxHp;
+    }
 
     updateHP();
 
   }
 );
+
+/* =============================================
+   RAID RESET
+============================================= */
 
 socket.on(
   "raid-reset",
@@ -1685,6 +2022,10 @@ function addEvent(
       "events"
     );
 
+  if (!container) {
+    return;
+  }
+
   const div =
     document.createElement(
       "div"
@@ -1692,24 +2033,29 @@ function addEvent(
 
   div.className =
     "event" +
-    (isGift
-      ? " gift"
-      : "");
+    (
+      isGift
+        ? " gift"
+        : ""
+    );
 
   if (isGift) {
 
     div.innerHTML = `
-      🎁 <b>
+      🎁
+      <b>
         ${escapeHtml(
-          event.nickname
+          event?.nickname
         )}
       </b>
 
       <small>
         ${escapeHtml(
-          event.giftName
+          event?.giftName
         )}
-        +${event.value}
+        +${Number(
+          event?.value || 0
+        ).toLocaleString()}
         💎
       </small>
     `;
@@ -1717,9 +2063,10 @@ function addEvent(
   } else {
 
     div.innerHTML = `
-      ❤️ <b>
+      ❤️
+      <b>
         ${escapeHtml(
-          event.nickname
+          event?.nickname
         )}
       </b>
 
@@ -1734,8 +2081,24 @@ function addEvent(
     div
   );
 
+  while (
+    container.children.length > 5
+  ) {
+
+    container.lastElementChild.remove();
+
+  }
+
   setTimeout(
-    () => div.remove(),
+    () => {
+
+      if (
+        div.parentNode
+      ) {
+        div.remove();
+      }
+
+    },
     4000
   );
 
@@ -1759,17 +2122,21 @@ function showDamage(
 
   div.textContent =
     "-" +
-    damage.toLocaleString();
+    Number(
+      damage || 0
+    ).toLocaleString();
 
   div.style.left =
-    (55 +
-      Math.random() * 20) +
-    "%";
+    (
+      55 +
+      Math.random() * 20
+    ) + "%";
 
   div.style.top =
-    (35 +
-      Math.random() * 25) +
-    "%";
+    (
+      35 +
+      Math.random() * 25
+    ) + "%";
 
   document
     .getElementById(
@@ -1780,10 +2147,17 @@ function showDamage(
     );
 
   setTimeout(
-    () => div.remove(),
+    () => {
+
+      if (
+        div.parentNode
+      ) {
+        div.remove();
+      }
+
+    },
     1000
   );
-
 }
 
 /* =============================================
@@ -1797,20 +2171,24 @@ function particle(
 ) {
 
   particles.push({
+
     x,
     y,
+
     vx:
-      (Math.random() - .5) *
-      7,
+      (Math.random() - .5) * 7,
+
     vy:
-      (Math.random() - .5) *
-      7,
+      (Math.random() - .5) * 7,
+
     life: 1,
+
     color,
+
     size:
       1 +
-      Math.random() *
-      4
+      Math.random() * 4
+
   });
 
 }
@@ -1824,8 +2202,9 @@ function spawnGiftBurst() {
   ) {
 
     particle(
-      W * .65,
-      H * .45,
+      W * .66,
+      H * .43,
+
       i % 2
         ? "#00ffff"
         : "#b020ff"
@@ -1850,6 +2229,7 @@ function spawnLikeBurst() {
   ) {
 
     particle(
+
       W / 2 +
         (Math.random() - .5) *
         300,
@@ -1857,6 +2237,7 @@ function spawnLikeBurst() {
       H * .7,
 
       "#00ffff"
+
     );
 
   }
@@ -1871,11 +2252,26 @@ function drawCryptCreature(
   time
 ) {
 
+  const mobile =
+    W <= 700;
+
   const cx =
-    W * .66;
+    mobile
+      ? W * .62
+      : W * .66;
 
   const cy =
-    H * .40;
+    mobile
+      ? H * .40
+      : H * .40;
+
+  const scale =
+    mobile
+      ? Math.min(
+          0.72,
+          W / 480
+        )
+      : 1;
 
   const phase =
     state.boss?.phase || 1;
@@ -1889,6 +2285,21 @@ function drawCryptCreature(
     bossPulse * 18;
 
   ctx.save();
+
+  ctx.translate(
+    cx,
+    cy
+  );
+
+  ctx.scale(
+    scale,
+    scale
+  );
+
+  ctx.translate(
+    -cx,
+    -cy
+  );
 
   /*
     Glow
@@ -2192,12 +2603,11 @@ function drawCryptCreature(
   ctx.lineWidth =
     2;
 
-  const circuitColors =
-    [
-      "#00ffff",
-      "#9b21ff",
-      "#31ff67"
-    ];
+  const circuitColors = [
+    "#00ffff",
+    "#9b21ff",
+    "#31ff67"
+  ];
 
   for (
     let i = 0;
@@ -2317,7 +2727,7 @@ function drawCryptCreature(
 }
 
 /* =============================================
-   DRAW ATTACKS
+   ATTACKS
 ============================================= */
 
 function drawAttacks() {
@@ -2335,22 +2745,24 @@ function drawAttacks() {
     attack.life -= .035;
 
     const targetX =
-      W * .66;
+      W <= 700
+        ? W * .62
+        : W * .66;
 
     const targetY =
-      H * .42;
+      H * .40;
 
-    attack.x =
-      attack.x +
-      (targetX -
-        attack.x) *
-        .07;
+    attack.x +=
+      (
+        targetX -
+        attack.x
+      ) * .07;
 
-    attack.y =
-      attack.y +
-      (targetY -
-        attack.y) *
-        .07;
+    attack.y +=
+      (
+        targetY -
+        attack.y
+      ) * .07;
 
     ctx.save();
 
@@ -2394,11 +2806,10 @@ function drawAttacks() {
     }
 
   }
-
 }
 
 /* =============================================
-   PARTICLE DRAW
+   PARTICLES
 ============================================= */
 
 function drawParticles() {
@@ -2463,7 +2874,6 @@ function drawParticles() {
     }
 
   }
-
 }
 
 /* =============================================
@@ -2538,19 +2948,21 @@ function drawBackground(
   ) {
 
     const x =
-      (i * 97) %
-      W;
+      (i * 97) % W;
 
     const y =
       (
         time * .02 +
         i * 73
-      ) %
-      H;
+      ) % H;
+
+    /*
+      Deterministic digital stream
+      instead of random flickering
+    */
 
     ctx.fillText(
-      Math.random() >
-        .5
+      i % 2
         ? "1"
         : "0",
       x,
@@ -2598,7 +3010,6 @@ function drawBackground(
   }
 
   ctx.restore();
-
 }
 
 /* =============================================
@@ -2625,6 +3036,11 @@ function animate(
 
     shake *= .9;
 
+    if (
+      shake < .1
+    ) {
+      shake = 0;
+    }
   }
 
   drawBackground(
@@ -2644,12 +3060,19 @@ function animate(
   requestAnimationFrame(
     animate
   );
-
 }
 
 requestAnimationFrame(
   animate
 );
+
+/* =============================================
+   INITIAL RENDER
+============================================= */
+
+renderHeroes();
+renderCrowd();
+updateHP();
 
 </script>
 
